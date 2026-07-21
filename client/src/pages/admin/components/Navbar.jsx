@@ -10,14 +10,14 @@ import { BsChatLeft } from "react-icons/bs";
 import { RiNotification3Line } from "react-icons/ri";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { TooltipComponent } from "@syncfusion/ej2-react-popups";
-import {  Chat, Notification, UserProfile } from ".";
+import { Chat, Notification, UserProfile } from ".";
 import profiile from "../../../Assets/profile dummy image.png";
 import { useEffect } from "react";
 import PropTypes from "prop-types";
 
 const Navbar = () => {
   const dispatch = useDispatch();
-  const {  chat, notification, userProfile, screenSize } = useSelector(
+  const { chat, notification, userProfile, screenSize } = useSelector(
     (state) => state.adminDashboardSlice
   );
 
@@ -65,8 +65,8 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex justify-between p-2 md:mx-6 relative">
-      <div>
+    <div className="flex justify-between max-w-[100%] p-2 text-white relative border-b shadow-lg shadow-slate-200 bg-blue-700">
+      <div className="flex ">
         <NavButton
           title="Menu"
           customFunc={() => dispatch(toggleSidebar())}
@@ -75,13 +75,13 @@ const Navbar = () => {
         />
       </div>
 
-      <div className="flex justify-between">
-       
+      <div className="flex justify-between text-white">
+
 
         <NavButton
           title="Chat"
           customFunc={() => dispatch(openPages("chat"))}
-          color={"blue"}
+          color={"white"}
           dotColor={"cyan"}
           icon={<BsChatLeft />}
         />
@@ -89,7 +89,8 @@ const Navbar = () => {
         <NavButton
           title="Notification"
           customFunc={() => dispatch(openPages("notification"))}
-          color={"blue"}
+          color={"white"}
+          hover={"bule"}
           dotColor={"gold"}
           icon={<RiNotification3Line />}
         />
@@ -100,16 +101,16 @@ const Navbar = () => {
           >
             <img src={profiile} alt="" className="w-4 h-4 rounded-full " />
             <p>
-              <span className="text-[12px] text-gray-400">Hi,</span>{" "}
-              <span className="text-gray-400 font-semi-bold  text-[12px]">
-                Jeevan
+              <span className="text-[12px] text-white">Hi,</span>{" "}
+              <span className="text-white font-semi-bold  text-[12px]">
+                Ashwini K
               </span>
             </p>
             <MdKeyboardArrowDown />
           </div>
         </TooltipComponent>
 
-        
+
         {chat && <div className="relative top-9 right-0"><Chat /></div>}
         {notification && <div className="relative top-9 right-0"><Notification /></div>}
         {userProfile && <div className="relative top-9 right-0"><UserProfile /></div>}

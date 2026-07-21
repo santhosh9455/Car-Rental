@@ -17,13 +17,35 @@ App.use(express.json());
 App.use(cookieParser())
 
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, ".env") });
 dotenv.config();
+
+process.env.ACCESS_TOKEN = process.env.ACCESS_TOKEN || "secret_access_token_key_12345";
+process.env.REFRESH_TOKEN = process.env.REFRESH_TOKEN || "secret_refresh_token_key_67890";
+
 const port = 3000;
 
+const mongoURI = process.env.mongo_uri || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/rent-a-ride";
+
+import { seedDefaultUsers } from "./utils/seedUsers.js";
+import { seedMockVehicles } from "./utils/seedVehicles.js";
+import { seedMockMasterData } from "./utils/seedMasterData.js";
+
 mongoose
-  .connect(process.env.mongo_uri)
-  .then(console.log("connected"))
-  .catch((error) => console.error(error));
+  .connect(mongoURI)
+  .then(async () => {
+    console.log("Connected to MongoDB successfully!");
+    await seedDefaultUsers();
+    await seedMockVehicles();
+    await seedMockMasterData();
+  })
+  .catch((error) => console.error("MongoDB connection error:", error));
 
   
 
