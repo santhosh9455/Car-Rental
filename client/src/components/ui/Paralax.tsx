@@ -1,4 +1,3 @@
-"use client";
 import React, { useRef } from "react";
 import {
   motion,
@@ -9,40 +8,26 @@ import {
 } from "framer-motion";
 import { useMediaQuery } from 'react-responsive';
 
-
-
-
 export const products = [
   {
-    title: "",
-    link: "https://userogue.com",
-    thumbnail: "https://evmwheels.com/front-theme/images/Group%20316.png",
-  },
-
-  {
-    title: "",
-    link: "https://userogue.com",
+    title: "Luxury Sedan",
+    link: "#",
     thumbnail: "https://img.freepik.com/premium-photo/luxury-car-rental-car-sale-social-media-instagram-post-template-design_1126722-2530.jpg",
   },
   {
-    title: "",
-    link: "https://userogue.com",
+    title: "Sport SUV",
+    link: "#",
     thumbnail: "https://evmwheels.com/front-theme/images/Group%20316.png",
   },
   {
-    title: "",
-    link: "https://userogue.com",
-    thumbnail: "https://evmwheels.com/front-theme/images/Group%20316.png",
+    title: "Compact City Car",
+    link: "#",
+    thumbnail: "https://img.freepik.com/premium-photo/luxury-car-rental-car-sale-social-media-instagram-post-template-design_1126722-2530.jpg",
   },
-
-  
 ];
 
 export const HeroParallax = () => {
-  const firstRow = products.slice(0, 1);
-  const secondRow = products.slice(1, 2);
-
-  const ref = useRef(null)
+  const ref = useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -50,129 +35,96 @@ export const HeroParallax = () => {
 
   const springConfig = { stiffness: 300, damping: 30, bounce: 100 };
 
-  const isMobile = useMediaQuery({ maxWidth: 500 });
-  const isTablet = useMediaQuery({ minWidth: 510, maxWidth: 900 });
-  const isDesktop = useMediaQuery({ minWidth: 901, maxWidth:1400 });
-
-  const translateXReverseMobile = useTransform(scrollYProgress, [0, .3], [1000, 70]);
-  const translateXTablet = useTransform(scrollYProgress, [0, .4], [1000, 300]);
-  const translateXReverseDesktop = useTransform(scrollYProgress, [0, .4], [1000,90])
-
   const translateX = useSpring(
-    isMobile
-    ? translateXReverseMobile
-    : isTablet
-    ? translateXTablet
-    : translateXReverseDesktop,
+    useTransform(scrollYProgress, [0, 1], [0, 1000]),
     springConfig
   );
+  
   const translateXReverse = useSpring(
-    useTransform(scrollYProgress, [0.7, 1], [250, -1000]),
+    useTransform(scrollYProgress, [0, 1], [0, -1000]),
     springConfig
   );
- 
+
   const rotateX = useSpring(
-    useTransform(scrollYProgress, [0, 0.150], [15, 0]),
+    useTransform(scrollYProgress, [0, 0.2], [15, 0]),
     springConfig
   );
   const opacity = useSpring(
-    useTransform(scrollYProgress, [0, 0.2], [0, 1]),
+    useTransform(scrollYProgress, [0, 0.2], [0.2, 1]),
     springConfig
   );
   const rotateZ = useSpring(
-    useTransform(scrollYProgress, [0, 0.350], [20, 0]),
-    springConfig
-  );
-  const rotateZM = useSpring(
-    useTransform(scrollYProgress, [0.7, 1], [0, -20]),
+    useTransform(scrollYProgress, [0, 0.2], [10, 0]),
     springConfig
   );
   const translateY = useSpring(
-    useTransform(scrollYProgress, [0, 0.2], [-800, 600]),
+    useTransform(scrollYProgress, [0, 0.2], [-300, 0]),
     springConfig
   );
 
   return (
-    <>
-      <div
-        ref={ref}
-        className="h-full py-40 overflow-hidden mb-[200px]  antialiased relative flex flex-col self-auto [perspective:1000px]  [transform-style:preserve-3d] "
+    <div
+      ref={ref}
+      className="h-[120vh] py-20 overflow-hidden antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d] bg-slate-50"
+    >
+      <Header />
+      <motion.div
+        style={{
+          rotateX,
+          rotateZ,
+          translateY,
+          opacity,
+        }}
+        className="mt-20"
       >
-        <Header />
-        <motion.div
-          style={{
-            rotateX,
-            rotateZ,
-            translateY,
-            opacity,
-            scrollBehavior:'smooth',
-            transition:'ease-in-out'
-          }}
-          className=""
-        >
-          <motion.div className="flex flex-row-reverse   mb-[200px] ">
-            {firstRow.map((product,index) => (
-              <div key={index} className="flex flex-col items-center lg:flex-row bg-gradient-to-br from-slate-900 to-green-500 max-w-full md:max-w-[800px] lg:max-w-[1300px] md:min-h-800px lg:min-h-[800px] gap-5 rounded-lg py-[50px] px-[50px] md:py-[100px] md:px-[100px] mx-auto  ">
-                <div>
-                  <h1 className="max-w-[250px] md:max-w-[600px] lg:max-w-[700px] lg:min-w-[500px] text-lg md:text-[24px]   p-1 md:p-4 text-justify lg:text-left  from-black  via-gray-700 to-white  bg-gradient-to-t bg-clip-text text-transparent  capitalize font-bold parallax1H1 my-[40px] leading-[2rem] md:leading-[3rem] ">
-                  Find the perfect ride at unbeatable prices. Whether it's a weekend getaway or a long-term rental, we’ve got you covered with flexible plans and zero hidden fees. Book now and hit the road in style!
-                  </h1>
-                </div>
-
-                <div className="mt-10 lg:mt-[-10px] ">
-                  <ProductCard
-                    product={product}
-                    translate={translateX}
-                  />
-                </div>
-              </div>
-            ))}
-          </motion.div>
-          {/* <motion.div className="flex flex-row-reverse  mb-[200px]  "  style={{ rotateZ: rotateZM  }}>
-            {secondRow.map((product,index) => (
-                
-              <div key={index}  className="flex flex-row justify-center items-center p-[100px] bg-gradient-to-br from-green-400 to-slate-900 max-w-[1300px] rounded-lg py-[100px] px-[100px] mx-auto ">
-                <div>
-                  <ProductCard
-                    product={product}
-                    translate={translateXReverse}
-                    
-                  />
-                </div>
-                <div className="pr-10">
-                  <h1 className="w-[400px] text-4xl    p-4 mr-[200px] text-start  from-white via-gray-50 to-black-700 bg-gradient-to-bl bg-clip-text text-transparent font-bold capitalize  ">
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                    Adipisci odit accusantium saepe iure eligendi, nihil
-                    perferendis reprehenderit dolore distinctio quaerat
-                  </h1>
-                </div>
-              </div>
-       
-            ))}
-          </motion.div> */}
-          <motion.div className="flex h-[600px] flex-row-reverse space-x-reverse space-x-20">
-           
-          </motion.div>
+        <motion.div className="flex flex-row-reverse space-x-reverse space-x-10 mb-12 lg:mb-20">
+          {products.map((product, index) => (
+            <ProductCard
+              key={`row1-${index}`}
+              product={product}
+              translate={translateX}
+            />
+          ))}
+          {/* Duplicate for seamless scrolling feel */}
+          {products.map((product, index) => (
+            <ProductCard
+              key={`row1-dup-${index}`}
+              product={product}
+              translate={translateX}
+            />
+          ))}
         </motion.div>
-      </div>
-     
-    </>
+        <motion.div className="flex flex-row mb-12 lg:mb-20 space-x-10">
+          {products.map((product, index) => (
+            <ProductCard
+              key={`row2-${index}`}
+              product={product}
+              translate={translateXReverse}
+            />
+          ))}
+          {/* Duplicate for seamless scrolling feel */}
+          {products.map((product, index) => (
+            <ProductCard
+              key={`row2-dup-${index}`}
+              product={product}
+              translate={translateXReverse}
+            />
+          ))}
+        </motion.div>
+      </motion.div>
+    </div>
   );
 };
 
 export const Header = () => {
   return (
-    <div className="flex justify-between items-center max-w-7xl relative mx-auto py-20 z-20 md:py-40 px-4 w-full bg-transparent  left-0 top-0">
-        <div>
-      <h1 className="text-2xl md:text-7xl font-bold dark:text-black bg-transparent">
-        The Ultimate <br /> Car rental For You
+    <div className="max-w-7xl relative mx-auto py-10 px-6 w-full text-center">
+      <h1 className="text-4xl md:text-6xl font-extrabold text-slate-800 tracking-tight font-poppins">
+        Featured <span className="text-green-500">Fleet</span>
       </h1>
-      <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-slate-800">
-        We provide beautiful products with clean and trust We are a team of
-        skilled and experienced professionals who are passionate about our work.
+      <p className="max-w-2xl mx-auto text-lg md:text-xl mt-6 text-slate-600">
+        Explore our collection of premium vehicles designed to give you the ultimate driving experience.
       </p>
-      </div>
-     
     </div>
   );
 };
@@ -194,23 +146,20 @@ export const ProductCard = ({
         x: translate,
       }}
       whileHover={{
-        y: -20,
+        y: -10,
+        scale: 1.02,
       }}
-      key={product.title}
-      className="group/product h-48 w-[50vh] md:h-96 md:w-[100vh] relative flex-shrink-0"
+      className="group/product h-[250px] w-[350px] md:h-[300px] md:w-[450px] relative flex-shrink-0 rounded-2xl overflow-hidden shadow-2xl bg-white border border-slate-100"
     >
-      
-        <div className="md:m-10">
-          <img
-            src={product.thumbnail}
-           
-            className="object-contain object-left-top absolute h-full w-full inset-0 max-w-[600px] max-h-[600px]"
-            alt={product.title}
-          />
-        </div>
-     
-      <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-80 pointer-events-none"></div>
-      <h2 className="absolute bottom-4 left-4 opacity-0 group-hover/product:opacity-100 text-white">
+      <div className="absolute inset-0 h-full w-full bg-slate-50 flex items-center justify-center p-4">
+        <img
+          src={product.thumbnail}
+          className="object-cover h-full w-full rounded-xl group-hover/product:scale-105 transition-transform duration-500 ease-in-out"
+          alt={product.title}
+        />
+      </div>
+      <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-100 bg-gradient-to-t from-black/80 via-black/30 to-transparent transition-opacity duration-300"></div>
+      <h2 className="absolute bottom-6 left-6 opacity-0 group-hover/product:opacity-100 text-white font-bold text-xl transition-all duration-300 translate-y-4 group-hover/product:translate-y-0">
         {product.title}
       </h2>
     </motion.div>

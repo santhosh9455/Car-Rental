@@ -164,189 +164,182 @@ const CarSearch = () => {
 
   return (
     <>
-      <section id="booking-section" className="book-section relative z-10 mt-[50px]  mx-auto max-w-[1500px] bg-white">
-        {/* overlay */}
-
-        <div className="container bg-white">
-          <div className="book-content   ">
-            <div className="book-content__box ">
-              <h2>Book a car</h2>
-
-              <p className="error-message">
-                All fields required! <IconX width={20} height={20} />
-              </p>
-
-              <p className="booking-done">
-                Check your email to confirm an order. <IconX width={20} height={20} />
-              </p>
-
-              <form onSubmit={handleSubmit(hanldeData)}>
-                <div className="box-form">
-                  <div className="box-form__car-type">
-                    <label htmlFor="pickup_district">
-                      <IconMapPinFilled className="input-icon" /> &nbsp; Pick-up District <p className="text-red-500">*</p>
-                    </label>
-                    <Controller
-                      name="pickup_district"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          id="pickup_district"
-                          className="p-2 capitalize"
-                          select
-                          // required
-                          error={Boolean(errors.pickup_district)}
-                          onChange={(e) => {
-                            field.onChange(e.target.value);
-                            dispatch(setSelectedDistrict(e.target.value));
-                          }}
-                        >
-                          {isLoading == true && (
-                            <MenuItem value="">
-                              <span className="animate-pulse">Loading</span> <span className="animate-pulse">...</span>
-                            </MenuItem>
-                          )}
-                          {!isLoading && <MenuItem value="">Select a Place</MenuItem>}
-                          {uniqueDistrict?.map((cur, idx) => (
-                            <MenuItem value={cur} key={idx}>
-                              {cur}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      )}
-                    />
-                    {errors.pickup_district && <p className="text-red-500">{errors.pickup_district.message}</p>}
-                  </div>
-
-                  <div className="box-form__car-type ">
-                    <label htmlFor="pickup_location">
-                      <IconMapPinFilled className="input-icon" /> &nbsp; Pick-up Location <p className="text-red-500">*</p>
-                    </label>
-                    <Controller
-                      name="pickup_location"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          id="pickup_location"
-                          select
-                          // required
-                          className="md:mb-10 capitalize"
-                          placeholder={"pick up location"}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          error={Boolean(errors.pickup_location)}
-                        >
-                          {isLoading && (
-                            <MenuItem value="">
-                              <span className="animate-pulse">Loading</span> <span className="animate-pulse">...</span>
-                            </MenuItem>
-                          )}
-                          {!isLoading && <MenuItem value="">Select a specific location</MenuItem>}
-                          {/* conditionaly rendering options based on district selected or not */}
-                          {locationsOfDistrict &&
-                            locationsOfDistrict.map((availableLocations, idx) => (
-                              <MenuItem value={availableLocations} key={idx}>
-                                {availableLocations}
-                              </MenuItem>
-                            ))}
-                        </TextField>
-                      )}
-                    />
-                    {errors.pickup_location && <p className="text-red-500">{errors.pickup_location.message}</p>}
-                  </div>
-
-                  <div className="box-form__car-type">
-                    <label>
-                      <IconMapPinFilled className="input-icon" /> &nbsp; Drop-of Location <p className="text-red-500">*</p>
-                    </label>
-
-                    <Controller
-                      name="dropoff_location"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          select
-                          // required
-                          error={Boolean(errors.dropoff_location)}
-                          id="dropoff_location"
-                          className="md:mb-10 capitalize"
-                          placeholder={"pick up location"}
-                          onChange={(e) => field.onChange(e.target.value)}
-                        >
-                          {isLoading && (
-                            <MenuItem value="">
-                              <span className="animate-pulse">Loading</span> <span className="animate-pulse">...</span>
-                            </MenuItem>
-                          )}
-                          {isLoading && <MenuItem value="">Select a specific location</MenuItem>}
-                          {/* conditionaly rendering options based on district selected or not */}
-                          {locationsOfDistrict &&
-                            locationsOfDistrict.map((availableLocations, idx) => (
-                              <MenuItem value={availableLocations} key={idx}>
-                                {availableLocations}
-                              </MenuItem>
-                            ))}
-                        </TextField>
-                      )}
-                    />
-                    {errors.dropoff_location && <p className="text-red-500">{errors.dropoff_location.message}</p>}
-                  </div>
-
-                  <div className="box-form__car-time">
-                    <label htmlFor="picktime" className="flex items-center">
-                      <IconCalendarEvent className="input-icon" /> &nbsp; Pick-up Date <p className="text-red-500">*</p>
-                    </label>
-                    <Controller
-                      name={"pickuptime"}
-                      control={control}
-                      render={({ field }) => (
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <DemoContainer components={["DateTimePicker"]}>
-                            <DateTimePicker
-                              label="Pickup time"
-                              {...field}
-                              value={field.value}
-                              minDate={dayjs()}
-                              onChange={(newValue) => {
-                                field.onChange(newValue); // Update the form field value
-                                setPickup(newValue); // Update the pickup state
-                              }}
-                            />
-                          </DemoContainer>
-                        </LocalizationProvider>
-                      )}
-                    />
-                    {errors.pickuptime && <p className="text-red-500">{errors.pickuptime.message}</p>}
-                  </div>
-
-                  <div className="box-form__car-time">
-                    <label htmlFor="droptime" className="flex items-center">
-                      <IconCalendarEvent className="input-icon" /> &nbsp; Drop-of Date <p className="text-red-500">*</p>
-                    </label>
-                    <Controller
-                      name={"dropofftime"}
-                      control={control}
-                      render={({ field }) => (
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <DemoContainer components={["DateTimePicker"]}>
-                            <DateTimePicker label="Dropoff time" {...field} value={field.value} minDate={pickup ? oneDayGap : dayjs()} />
-                          </DemoContainer>
-                        </LocalizationProvider>
-                      )}
-                    />
-                    {errors.dropofftime && <p className="text-red-500">{errors.dropofftime.message}</p>}
-                    {error && <p className="text-[8px] text-red-500">{error}</p>}
-                  </div>
-
-                  <button type="submit" className="book-content__box_button">
-                    Search
-                  </button>
-                </div>
-              </form>
-            </div>
+      <section id="booking-section" className="relative z-20 -mt-16 sm:-mt-24 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-10 border border-slate-100">
+          <div className="mb-8">
+            <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight font-poppins">Book your <span className="text-green-500">Ride</span></h2>
+            <p className="text-slate-500 mt-2">Find the perfect car for your next journey.</p>
           </div>
+
+          <form onSubmit={handleSubmit(hanldeData)}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-start">
+              
+              {/* Pickup District */}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="pickup_district" className="flex items-center text-sm font-semibold text-slate-700">
+                  <IconMapPinFilled className="w-4 h-4 text-green-500 mr-2" /> Pick-up District <span className="text-red-500 ml-1">*</span>
+                </label>
+                <Controller
+                  name="pickup_district"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      id="pickup_district"
+                      select
+                      fullWidth
+                      size="small"
+                      error={Boolean(errors.pickup_district)}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        dispatch(setSelectedDistrict(e.target.value));
+                      }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '0.75rem' } }}
+                    >
+                      {isLoading && (
+                        <MenuItem value="">
+                          <span className="animate-pulse">Loading...</span>
+                        </MenuItem>
+                      )}
+                      {!isLoading && <MenuItem value="">Select District</MenuItem>}
+                      {uniqueDistrict?.map((cur, idx) => (
+                        <MenuItem value={cur} key={idx} className="capitalize">{cur}</MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+                {errors.pickup_district && <p className="text-xs text-red-500">{errors.pickup_district.message}</p>}
+              </div>
+
+              {/* Pickup Location */}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="pickup_location" className="flex items-center text-sm font-semibold text-slate-700">
+                  <IconMapPinFilled className="w-4 h-4 text-green-500 mr-2" /> Pick-up Location <span className="text-red-500 ml-1">*</span>
+                </label>
+                <Controller
+                  name="pickup_location"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      id="pickup_location"
+                      select
+                      fullWidth
+                      size="small"
+                      error={Boolean(errors.pickup_location)}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '0.75rem' } }}
+                    >
+                      {isLoading && (
+                        <MenuItem value="">
+                          <span className="animate-pulse">Loading...</span>
+                        </MenuItem>
+                      )}
+                      {!isLoading && <MenuItem value="">Select Location</MenuItem>}
+                      {locationsOfDistrict && locationsOfDistrict.map((loc, idx) => (
+                        <MenuItem value={loc} key={idx} className="capitalize">{loc}</MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+                {errors.pickup_location && <p className="text-xs text-red-500">{errors.pickup_location.message}</p>}
+              </div>
+
+              {/* Drop-off Location */}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="dropoff_location" className="flex items-center text-sm font-semibold text-slate-700">
+                  <IconMapPinFilled className="w-4 h-4 text-red-500 mr-2" /> Drop-off Location <span className="text-red-500 ml-1">*</span>
+                </label>
+                <Controller
+                  name="dropoff_location"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      id="dropoff_location"
+                      select
+                      fullWidth
+                      size="small"
+                      error={Boolean(errors.dropoff_location)}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '0.75rem' } }}
+                    >
+                      {isLoading && (
+                        <MenuItem value="">
+                          <span className="animate-pulse">Loading...</span>
+                        </MenuItem>
+                      )}
+                      {!isLoading && <MenuItem value="">Select Location</MenuItem>}
+                      {locationsOfDistrict && locationsOfDistrict.map((loc, idx) => (
+                        <MenuItem value={loc} key={idx} className="capitalize">{loc}</MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+                {errors.dropoff_location && <p className="text-xs text-red-500">{errors.dropoff_location.message}</p>}
+              </div>
+
+              {/* Pick-up Date */}
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center text-sm font-semibold text-slate-700">
+                  <IconCalendarEvent className="w-4 h-4 text-green-500 mr-2" /> Pick-up Date <span className="text-red-500 ml-1">*</span>
+                </label>
+                <Controller
+                  name="pickuptime"
+                  control={control}
+                  render={({ field }) => (
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DateTimePicker
+                        {...field}
+                        value={field.value}
+                        minDate={dayjs()}
+                        onChange={(newValue) => {
+                          field.onChange(newValue);
+                          setPickup(newValue);
+                        }}
+                        slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: '0.75rem' } } } }}
+                      />
+                    </LocalizationProvider>
+                  )}
+                />
+                {errors.pickuptime && <p className="text-xs text-red-500">{errors.pickuptime.message}</p>}
+              </div>
+
+              {/* Drop-off Date */}
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center text-sm font-semibold text-slate-700">
+                  <IconCalendarEvent className="w-4 h-4 text-red-500 mr-2" /> Drop-off Date <span className="text-red-500 ml-1">*</span>
+                </label>
+                <Controller
+                  name="dropofftime"
+                  control={control}
+                  render={({ field }) => (
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DateTimePicker
+                        {...field}
+                        value={field.value}
+                        minDate={pickup ? oneDayGap : dayjs()}
+                        slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: '0.75rem' } } } }}
+                      />
+                    </LocalizationProvider>
+                  )}
+                />
+                {errors.dropofftime && <p className="text-xs text-red-500">{errors.dropofftime.message}</p>}
+                {error && <p className="text-xs text-red-500">{error}</p>}
+              </div>
+
+              {/* Search Button */}
+              <div className="col-span-1 md:col-span-2 lg:col-span-5 flex justify-end mt-4">
+                <button
+                  type="submit"
+                  className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-10 rounded-full shadow-lg shadow-green-500/30 transition-all duration-300 transform hover:-translate-y-1 w-full sm:w-auto"
+                >
+                  Search Cars
+                </button>
+              </div>
+
+            </div>
+          </form>
         </div>
       </section>
     </>

@@ -1,191 +1,159 @@
 import styles from "../index";
 import { navLinks } from "../constants";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { MdMenuOpen } from "react-icons/md";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Drawer } from "antd";
-
 
 function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const [nav, setNav] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <div
-      className={`w-full   flex justify-between items-center px-6 sm:px-12 md:px-18 lg:py-6 lg:px-28 pt-10 mt-5 md:mt-10 sm:max-w-[900px] lg:max-w-[1500px] mx-auto `}
+    <header
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-white/80 backdrop-blur-lg shadow-sm py-4"
+          : "bg-transparent py-6"
+      }`}
     >
-      <Link to="/">
-        <div
-          className={` text-[16px] md:text-[18px] lg:text-[20px] font-poppins font-bold`}
-        >
-          Rent a Ride
-        </div>
-      </Link>
+      <div className="w-full flex justify-between items-center px-6 sm:px-12 md:px-18 lg:px-28 max-w-[1500px] mx-auto">
+        <Link to="/">
+          <div className="text-[20px] md:text-[24px] font-poppins font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+            Rent a <span className="text-green-500">Ride</span>
+          </div>
+        </Link>
 
-      <div className="hidden lg:block">
-        <ul className="flex list-none">
-          {navLinks.map((navlink, index) => (
-            <li
-              key={index}
-              className={`${index != navLinks.length - 1 ? "mx-4" : "mx-0"}`}
-            >
-              <Link
-                to={navlink.path}
-                className={`text-black  font-poppins cursor-pointer font-semibold`}
-              >
-                {navlink.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="flex gap-2">
-        <div className="hidden md:inline-flex">
-          <Link to={"/signIn"}>
-            {currentUser && !currentUser.isAdmin && !currentUser.isVendor ? (
-              ""
-            ) : (
-              <button
-                id="signin"
-                className={`border-[1px] hidden lg:inline-flex border-green-500 py-1 text-[12px] md:text-[14px] sm:py-[7px] px-2 sm:px-4 font-normal sm:font-semibold rounded-md `}
-              >
-                Sign In
-              </button>
-            )}
-          </Link>
-        </div>
-        <div className="hidden lg:flex items-center justify-center">
-          {currentUser && !currentUser.isAdmin && !currentUser.isVendor ? (
-            <Link to={"/profile"}>
-              <img
-                src={`${currentUser.profilePicture}`}
-                alt="fsd"
-                referrerPolicy="no-referrer"
-                className="h-10 w-10 rounded-[50%] object-cover"
-              />
-            </Link>
-          ) : (
-            <div className="hidden lg:inline-flex">
-              <Link to={"/signup"}>
-                <button id="signup" className={`${styles.button} `}>
-                  Sign Up
-                </button>
-              </Link>
-            </div>
-          )}
-        </div>
-
-
-        {/*  Mobile Menu */}
-        <div className="relative lg:hidden flex justify-center items-center">
-          <button onClick={() => setNav(!nav)}>
-            <div>{nav ? <MdMenuOpen /> : <RxHamburgerMenu />}</div>
-          </button>
-          <Drawer
-            destroyOnClose={true}
-            onClose={() => setNav(false)}
-            open={nav}
-          >
-            <div className="flex flex-col items-start justify-between gap-y-10">
-              {navLinks.map((navlink, index) => (
-            
+        <div className="hidden lg:block">
+          <ul className="flex list-none gap-8">
+            {navLinks.map((navlink, index) => {
+              const isActive = location.pathname === navlink.path;
+              return (
+                <li key={index}>
                   <Link
-                    key={index}
                     to={navlink.path}
-                    className="text-[26px]"
-                    onClick={() => setNav(false)}
+                    className={`font-poppins cursor-pointer font-medium text-[15px] transition-colors duration-300 hover:text-green-500 ${
+                      isActive ? "text-green-500" : "text-slate-600"
+                    }`}
                   >
                     {navlink.title}
                   </Link>
-              
-              ))}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
 
-              {currentUser && !currentUser.isAdmin && !currentUser.isVendor && (
-                <div>
-                  <Link to={"/profile"}>
-                    <div id="signup" className={` rounded-md font-semibold text-[24px]`}>
-                      Profile
-                    </div>
-                  </Link>
-                </div>
-              )}
-
-              <div>
+        <div className="flex gap-4 items-center">
+          <div className="hidden md:flex items-center gap-4">
+            {currentUser && !currentUser.isAdmin && !currentUser.isVendor ? (
+              <Link to={"/profile"}>
+                <img
+                  src={`${currentUser.profilePicture}`}
+                  alt="profile"
+                  referrerPolicy="no-referrer"
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-green-500 ring-offset-2 transition-transform hover:scale-105"
+                />
+              </Link>
+            ) : (
+              <>
                 <Link to={"/signIn"}>
-                  {currentUser &&
-                  !currentUser.isAdmin &&
-                  !currentUser.isVendor ? (
-                    ""
-                  ) : (
-                    <button
-                      id="signin"
-                      className={` rounded-md  text-[24px] font-semibold  `}
-                    >
-                      Sign In
-                    </button>
-                  )}
+                  <button className="text-slate-600 font-medium hover:text-green-500 transition-colors px-4 py-2">
+                    Sign In
+                  </button>
                 </Link>
-              </div>
+                <Link to={"/signup"}>
+                  <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-full font-medium transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transform hover:-translate-y-0.5">
+                    Sign Up
+                  </button>
+                </Link>
+              </>
+            )}
+          </div>
 
-              <div>
-                {currentUser &&
-                !currentUser.isAdmin &&
-                !currentUser.isVendor ? (
-                  ""
-                ) : (
-                  <div>
-                    <Link to={"/signup"}>
-                      <button
-                        id="signup"
-                        className=" rounded-md  text-[24px] font-semibold "
+          {/* Mobile Menu Toggle */}
+          <div className="lg:hidden flex items-center">
+            <button
+              onClick={() => setNav(!nav)}
+              className="text-slate-800 text-2xl hover:text-green-500 transition-colors"
+            >
+              {nav ? <MdMenuOpen /> : <RxHamburgerMenu />}
+            </button>
+            <Drawer
+              destroyOnClose={true}
+              onClose={() => setNav(false)}
+              open={nav}
+              placement="right"
+              width={280}
+            >
+              <div className="flex flex-col h-full">
+                <div className="flex flex-col gap-6 mt-8">
+                  {navLinks.map((navlink, index) => {
+                    const isActive = location.pathname === navlink.path;
+                    return (
+                      <Link
+                        key={index}
+                        to={navlink.path}
+                        className={`text-xl font-semibold transition-colors ${
+                          isActive ? "text-green-500" : "text-slate-700 hover:text-green-500"
+                        }`}
+                        onClick={() => setNav(false)}
                       >
-                        Sign Up
-                      </button>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Drawer>
-          {nav && (
-            <div>
-              <div className="absolute top-6 z-10 right-0  ">
-                <Link to={"/signIn"}>
-                  {currentUser &&
-                  !currentUser.isAdmin &&
-                  !currentUser.isVendor ? (
-                    ""
-                  ) : (
-                    <button
-                      id="signin"
-                      className={`border-[1px] w-[80px]  border-green-500 bg-green-500  py-1 text-[10px]   px-2  font-normal sm:font-semibold  `}
-                    >
-                      Sign In
-                    </button>
-                  )}
-                </Link>
-              </div>
+                        {navlink.title}
+                      </Link>
+                    );
+                  })}
+                </div>
 
-              <div>
-                {currentUser &&
-                  !currentUser.isAdmin &&
-                  !currentUser.isVendor && (
-                    <div className="hidden lg:inline-flex">
-                      <Link to={"/signup"}>
-                        <button id="signup" className={`${styles.button} `}>
+                <div className="mt-auto pt-8 flex flex-col gap-4">
+                  {currentUser && !currentUser.isAdmin && !currentUser.isVendor ? (
+                    <Link to={"/profile"} onClick={() => setNav(false)}>
+                      <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                        <img
+                          src={`${currentUser.profilePicture}`}
+                          alt="profile"
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                        <span className="font-semibold text-slate-800">My Profile</span>
+                      </div>
+                    </Link>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      <Link to={"/signIn"} onClick={() => setNav(false)}>
+                        <button className="w-full py-3 rounded-xl border-2 border-slate-200 text-slate-700 font-semibold hover:border-green-500 hover:text-green-500 transition-colors">
+                          Sign In
+                        </button>
+                      </Link>
+                      <Link to={"/signup"} onClick={() => setNav(false)}>
+                        <button className="w-full py-3 rounded-xl bg-green-500 text-white font-semibold shadow-md hover:bg-green-600 transition-colors">
                           Sign Up
                         </button>
                       </Link>
                     </div>
                   )}
+                </div>
               </div>
-            </div>
-          )}
+            </Drawer>
+          </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
 
