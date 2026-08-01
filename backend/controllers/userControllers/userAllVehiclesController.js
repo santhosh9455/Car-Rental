@@ -1,4 +1,5 @@
 import vehicle from "../../models/vehicleModel.js";
+import Booking from "../../models/BookingModel.js";
 import { errorHandler } from "../../utils/error.js";
 
 //show all vehicles to user
@@ -132,7 +133,7 @@ export const searchCar = async (req, res, next) => {
             $match: {
               district: pickup_district,
               location: pickup_location,
-              isBooked: "false",
+              isBooked: false,
             },
           },
           {

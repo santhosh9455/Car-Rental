@@ -54,16 +54,36 @@ export const verifyToken = async (req, res, next) => {
   } else {
     try {
       const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
-      req.user = decoded.id; //setting req.user so that next middleware in this cycle can acess it
+      req.user = decoded.id;
       next();
     } catch (error) {
       if (error.name === "TokenExpiredError") {
         if (!refreshToken) {
-          return next(errorHandler(401, "You are not authenticated"));
+          return next(errorHandler(401, "Session expired. Please sign in again."));
         }
-
-        // Access token expired, try to refresh it
-        //try to refresh it
+        // Access token expired — try to use the refresh token
+        try {
+          const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
+          const user = await User.findById(decoded.id);
+          if (!user || user.refreshToken !== refreshToken) {
+            return next(errorHandler(403, "Invalid refresh token. Please sign in again."));
+          }
+          const newAccessToken = jwt.sign(
+            { id: user._id },
+            process.env.ACCESS_TOKEN,
+            { expiresIn: "15m" }
+          );
+          const newRefreshToken = jwt.sign(
+            { id: user._id },
+            process.env.REFRESH_TOKEN,
+            { expiresIn: "7d" }
+          );
+          await User.updateOne({ _id: user._id }, { refreshToken: newRefreshToken });
+          req.user = user._id;
+          next();
+        } catch (refreshError) {
+          return next(errorHandler(403, "Refresh token invalid or expired."));
+        }
       } else {
         next(errorHandler(403, "Token is not valid"));
       }

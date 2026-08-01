@@ -1,183 +1,172 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { MdCurrencyRupee } from "react-icons/md";
-import { IoMdTime } from "react-icons/io";
 import { CiCalendarDate } from "react-icons/ci";
 import { CiLocationOn } from "react-icons/ci";
 import UserOrderDetailsModal from "../../components/UserOrderDetailsModal";
-import {
-  setIsOrderModalOpen,
-  setSingleOrderDetails,
-} from "../../redux/user/userSlice";
+import { setIsOrderModalOpen, setSingleOrderDetails } from "../../redux/user/userSlice";
+import { motion, AnimatePresence } from "framer-motion";
+import { IconShoppingBag, IconCalendar, IconMapPin, IconChevronRight } from "@tabler/icons-react";
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  return `${d.getDate()} ${d.toLocaleString("default", { month: "short" })} ${d.getFullYear()} · ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+};
 
+const statusColor = {
+  booked: "bg-green-100 text-green-700",
+  onTrip: "bg-blue-100 text-blue-700",
+  notPicked: "bg-yellow-100 text-yellow-700",
+  canceled: "bg-red-100 text-red-700",
+  overDue: "bg-orange-100 text-orange-700",
+  tripCompleted: "bg-slate-100 text-slate-600",
+  notBooked: "bg-slate-100 text-slate-500",
+};
 
 export default function Orders() {
   const { _id } = useSelector((state) => state.user.currentUser);
-  const [bookings, setBookings] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
 
   const fetchBookings = async () => {
     try {
       const res = await fetch("/api/user/findBookingsOfUser", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: _id,
-        }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ userId: _id }),
       });
-
       const data = await res.json();
-      if (data) {
-        setBookings(data);
-      }
+      if (Array.isArray(data)) setBookings(data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  useEffect(() => { fetchBookings(); }, []);
 
-  const handleDetailsModal = (bookingDetails, vehicleDetails) => {
+  const handleDetailsModal = (cur) => {
     dispatch(setIsOrderModalOpen(true));
-    dispatch(setSingleOrderDetails(bookingDetails, vehicleDetails));
+    dispatch(setSingleOrderDetails(cur));
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-20">
+    <div>
       <UserOrderDetailsModal />
-      <h1 className="text-4xl font-semibold mb-2">Your Bookings</h1>
-      <div className="text-sm text-gray-600 mb-8">
-        {bookings && bookings.length > 0 ? "Check out all of your Bookings" :  <div className="font-extrabold text-black flex justify-center items-center min-h-[500px]">No Bookings Yet</div>}
+
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+          <IconShoppingBag size={20} className="text-green-600" />
+        </div>
+        <div>
+          <h1 className="text-xl font-extrabold text-slate-800">Your Bookings</h1>
+          <p className="text-sm text-slate-500">
+            {bookings.length > 0 ? `${bookings.length} booking${bookings.length > 1 ? "s" : ""} found` : "Track all your rides"}
+          </p>
+        </div>
       </div>
-      <div className="mb-8">
-        {bookings && bookings.length > 0
-          && bookings.map((cur, idx) => {
-              const pickupDate = new Date(cur.bookingDetails.pickupDate);
-              const dropoffDate = new Date(cur.bookingDetails.dropOffDate);
+
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1,2,3].map((i) => (
+            <div key={i} className="h-36 rounded-2xl bg-slate-100 animate-pulse" />
+          ))}
+        </div>
+      ) : bookings.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+          <IconShoppingBag size={52} className="mb-4 text-slate-200" />
+          <p className="text-lg font-semibold text-slate-500">No bookings yet</p>
+          <p className="text-sm mt-1">Your booked rides will appear here</p>
+        </div>
+      ) : (
+        <AnimatePresence>
+          <div className="space-y-4">
+            {bookings.map((cur, idx) => {
+              const vehicle = cur.vehicleDetails;
+              const booking = cur.bookingDetails;
+              const status = booking?.status || "booked";
 
               return (
-                <div
-                  className="box-shadow-md drop-shadow-md border border-1px rounded-lg p-4 md:px-10 md:py-5 mb-4"
+                <motion.div
                   key={idx}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.07 }}
+                  className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-0 md:gap-6 ">
-                    <div className="mb-4">
-                    <img
-                      alt={cur.vehicleDetails.name}
-                      className="w-full h-auto bg-gray-100  "
-                      height="200"
-                      src={cur.vehicleDetails.image[0]}
-                      style={{
-                        aspectRatio: "200/200",
-                        objectFit: "contain",
-                      }}
-                      width="200"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-0">
+                    {/* Car Image */}
+                    <div className="bg-slate-50 flex items-center justify-center p-4 border-b sm:border-b-0 sm:border-r border-slate-100">
+                      <img
+                        src={vehicle?.image?.[0]}
+                        alt={vehicle?.name}
+                        className="h-24 w-full object-contain"
+                      />
                     </div>
-                    
-                    <div className="col-span-2">
-                      <h3 className="text-lg font-semibold mb-1">{cur._id}</h3>
-                      <p className="text-gray-600 mb-2">
-                        <span className="font-bold">Id</span> :{" "}
-                        {cur.bookingDetails._id}
-                      </p>
-                      <p className="text-lg font-semibold mb-4 flex  items-center">
-                        <span>
-                          <MdCurrencyRupee />
-                        </span>
-                        {cur.bookingDetails.totalPrice}
-                      </p>
-                      <div className="flex justify-between">
-                        <div className="">
-                          <div className="mt-2 font-medium underline underline-offset-4 mb-5">
-                            Pick up
-                          </div>
-                          <div className="mt-2 capitalize">
-                            <p className="text-black text-sm mt-2 leading-6 flex items-center gap-2">
-                              <span>
-                                <CiLocationOn />
-                              </span>
-                              {cur.bookingDetails.pickUpLocation}
-                            </p>
 
-                            <div className="text-[14px] flex flex-col justify-start items-start  pr-2 gap-2 mt-2">
-                              <div className="flex justify-between gap-2 items-center">
-                                <span>
-                                  <CiCalendarDate style={{ fontSize: 15 }} />
-                                </span>
-                                {
-                                  <>
-                                    <span> {pickupDate.getDate()}: </span>
-                                    <span>{pickupDate.getMonth()} : </span>
-                                    <span>{pickupDate.getFullYear()} </span>
-                                  </>
-                                }
-                              </div>
-                              <div className="flex justify-center items-center gap-2">
-                                <span>
-                                  <IoMdTime style={{ fontSize: 16 }} />
-                                </span>
-                                <span></span>
-                                {pickupDate.getHours()}:
-                                <span>{pickupDate.getMinutes()}</span>
-                              </div>
+                    {/* Details */}
+                    <div className="sm:col-span-3 p-5">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <h3 className="font-bold text-slate-800 capitalize">{vehicle?.name || "Unknown Vehicle"}</h3>
+                          <p className="text-xs text-slate-400 mt-0.5">Booking ID: {booking?._id?.slice(-8)}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1.5">
+                          <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize ${statusColor[status] || statusColor.booked}`}>
+                            {status}
+                          </span>
+                          <div className="flex items-center text-green-600 font-bold text-lg">
+                            <MdCurrencyRupee />
+                            {booking?.totalPrice}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600">
+                        <div className="flex items-start gap-2">
+                          <IconMapPin size={14} className="text-green-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="font-semibold text-slate-400 mb-0.5">Pick-up</div>
+                            <div className="capitalize">{booking?.pickUpLocation}</div>
+                            <div className="text-slate-400 flex items-center gap-1 mt-0.5">
+                              <IconCalendar size={11} />
+                              {formatDate(booking?.pickupDate)}
                             </div>
                           </div>
                         </div>
-                        <div className="">
-                          <div className="mt-2 font-medium underline underline-offset-4 mb-5">
-                            Drop off
-                          </div>
-
-                          <div className="mt-2">
-                            <p className="text-black text-sm leading-6 mt-2 capitalize flex items-center gap-2">
-                              <span>
-                                <CiLocationOn />
-                              </span>
-                              {cur.bookingDetails.dropOffLocation}
-                            </p>
-
-                            <div className="text-[14px] flex flex-col justify-start items-start pr-2 gap-2 mt-2">
-                              <div className="flex  justify-between gap-2 items-center">
-                                <span>
-                                  <CiCalendarDate style={{ fontSize: 15 }} />
-                                </span>
-                                <span>{dropoffDate.getDate()} : </span>
-                                <span>{dropoffDate.getMonth()} : </span>
-                                <span>{dropoffDate.getFullYear()} </span>
-                              </div>
-                              <div className="flex justify-center items-center gap-2">
-                                <span>
-                                  <IoMdTime style={{ fontSize: 16 }} />
-                                </span>
-                                <span>{dropoffDate.getHours()} </span>:
-                                <span>{dropoffDate.getMinutes()} </span>
-                              </div>
+                        <div className="flex items-start gap-2">
+                          <IconMapPin size={14} className="text-red-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="font-semibold text-slate-400 mb-0.5">Drop-off</div>
+                            <div className="capitalize">{booking?.dropOffLocation}</div>
+                            <div className="text-slate-400 flex items-center gap-1 mt-0.5">
+                              <IconCalendar size={11} />
+                              {formatDate(booking?.dropOffDate)}
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="flex mt-4">
+
+                      <div className="flex justify-end mt-4">
                         <button
-                          className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
                           onClick={() => handleDetailsModal(cur)}
+                          className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-green-600 transition-colors"
                         >
-                          Details
+                          View Details <IconChevronRight size={16} />
                         </button>
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
-            })
-          }
-      </div>
+            })}
+          </div>
+        </AnimatePresence>
+      )}
     </div>
   );
 }

@@ -8,13 +8,22 @@ import vendorRoute from './routes/venderRoute.js'
 import cors from 'cors'
 import cookieParser from "cookie-parser";
 import { cloudinaryConfig } from "./utils/cloudinaryConfig.js";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 
 const App = express();
 
 
 App.use(express.json());
-App.use(cookieParser())
+App.use(cookieParser());
+App.use(helmet());
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { succes: false, message: 'Too many requests from this IP, please try again later' }
+});
 
 
 import path from "path";
@@ -49,19 +58,19 @@ mongoose
 
   
 
-App.listen(port, () => {
-  console.log("server listening !");
-});
-
-const allowedOrigins = ['https://rent-a-ride-two.vercel.app', 'http://localhost:5173']; // Add allowed origins here
+const allowedOrigins = ['https://rent-a-ride-two.vercel.app', 'http://localhost:5173'];
 
 App.use(
   cors({
     origin: allowedOrigins,
-    methods:['GET', 'PUT', 'POST' ,'PATCH','DELETE'],
-    credentials: true, // Enables the Access-Control-Allow-Credentials header
+    methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE'],
+    credentials: true,
   })
 );
+
+App.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
 
 
 App.use('*', cloudinaryConfig);
@@ -70,9 +79,14 @@ App.use('*', cloudinaryConfig);
 
 
 App.use("/api/user", userRoute);
-App.use("/api/auth", authRoute);
-App.use("/api/admin",adminRoute);
+App.use("/api/auth", authLimiter, authRoute);
+App.use("/api/admin", adminRoute);
 App.use("/api/vendor",vendorRoute)
+
+// 404 handler for unknown routes
+App.use((req, res) => {
+  res.status(404).json({ succes: false, message: 'Route not found' });
+});
 
 
 

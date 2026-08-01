@@ -44,7 +44,10 @@ export const BookCar = async (req, res, next) => {
     }
 
     const booked = await book.save();
-    res.status(200).json({
+    if (!booked) {
+      return next(errorHandler(500, "Failed to save booking"));
+    }
+    res.status(201).json({
       message: "car booked successfully",
       booked,
     });
@@ -363,8 +366,8 @@ export const latestbookings = async (req, res, next) => {
       },
     ]);
 
-    if (!bookings) {
-      res.status(404, "error no such booking");
+    if (!bookings || bookings.length === 0) {
+      return res.status(404).json({ success: false, message: "No bookings found" });
     }
 
     res.status(200).json(bookings);

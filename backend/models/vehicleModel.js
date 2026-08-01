@@ -15,12 +15,12 @@ const vehicleSchema = new mongoose.Schema({
     required:false
   },
   created_at:{
-    type:String,
-    required:false
+    type: Date,
+    default: Date.now
   },
   updated_at:{
-    type:String,
-    required:false
+    type: Date,
+    default: Date.now
   },
   remark:{
     type:String,
@@ -44,16 +44,18 @@ const vehicleSchema = new mongoose.Schema({
   },
   fuel_type: {
     type: String,
-    enum:["petrol", "diesel", "electirc","hybrid"],
-    required:false
+    enum: ["petrol", "diesel", "electric", "hybrid"],
+    required: false
   },
   rented_by: {
     type: String,
     required: false,
   },
   rating: {
-    type: ["1", "2", "3", "4", "5"],
-    requrired:false,
+    type: Number,
+    min: 1,
+    max: 5,
+    required: false,
   },
   seats: {
     type: Number,
