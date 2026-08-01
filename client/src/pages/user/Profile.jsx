@@ -1,11 +1,12 @@
 import { useSelector, useDispatch } from "react-redux";
 import UserProfileSidebar from "../../components/UserProfileSidebar";
-import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Orders from "./Orders";
 import UserProfileContent from "../../components/UserProfileContent";
 import Favorites from "./Favorites";
 import { showSidebarOrNot } from "../../redux/adminSlices/adminDashboardSlice/DashboardSlice";
-import { IconMenu2, IconArrowLeft, IconUser, IconShoppingBag, IconHeart, IconX } from "@tabler/icons-react";
+import { signOut } from "../../redux/user/userSlice";
+import { IconMenu2, IconArrowLeft, IconUser, IconShoppingBag, IconHeart, IconX, IconLogout } from "@tabler/icons-react";
 
 const navLinks = [
   { to: "/profile/profiles", label: "My Profile", icon: <IconUser size={18} /> },
@@ -18,6 +19,12 @@ function Profile() {
   const { activeMenu } = useSelector((state) => state.adminDashboardSlice);
   const dispatch = useDispatch();
   const location = useLocation();
+  const navigate = useNavigate(); // Need this if not already imported, let's import it
+
+  const handleLogout = () => {
+    dispatch(signOut());
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -60,6 +67,16 @@ function Profile() {
                 );
               })}
 
+              <div className="pt-2 mt-2 border-t border-slate-100">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <IconLogout size={18} />
+                  Logout
+                </button>
+              </div>
+
               {/* Hidden syncfusion sidebar for mobile compat */}
               <div className="hidden">
                 <UserProfileSidebar />
@@ -88,6 +105,13 @@ function Profile() {
                   </Link>
                 );
               })}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all bg-white border border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <IconLogout size={18} />
+                Logout
+              </button>
             </div>
 
             <div className="bg-white rounded-2xl shadow-md border border-slate-100 min-h-[60vh] p-6">

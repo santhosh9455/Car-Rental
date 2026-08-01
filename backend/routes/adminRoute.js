@@ -9,6 +9,7 @@ import { insertDummyData } from "../controllers/adminControllers/masterCollectio
 import { getCarModelData } from "../controllers/adminControllers/masterCollectionController.js"
 import { approveVendorVehicleRequest, fetchVendorVehilceRequests, rejectVendorVehicleRequest } from "../controllers/adminControllers/vendorVehilceRequests.js"
 import { allBookings, changeStatus } from "../controllers/adminControllers/bookingsController.js"
+import { getSettings, updateSettings } from "../controllers/adminControllers/settingsController.js"
 import { verifyToken } from "../utils/verifyUser.js"
 
 
@@ -31,5 +32,7 @@ router.post('/approveVendorVehicleRequest',approveVendorVehicleRequest)
 router.post('/rejectVendorVehicleRequest',rejectVendorVehicleRequest)
 router.get('/allBookings',allBookings)
 router.post('/changeStatus',changeStatus)
+router.get('/settings', getSettings)
+router.put('/settings', updateSettings)
 
 export default router

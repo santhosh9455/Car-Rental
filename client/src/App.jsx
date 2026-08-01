@@ -46,6 +46,8 @@ function App() {
             <Route path="/vehicles" element={<Vehicles />} />
             <Route path="/enterprise" element={<Enterprise />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/vehicleDetails" element={<VehicleDetails />} />
+            <Route path="/checkoutPage" element={<CheckoutPage />} />
           </Route>
 
           {/* components without Navbar */}
@@ -63,10 +65,8 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/profile/*" element={<Profile />} />
             <Route path="/allVariants" element={<AllVehiclesofSameModel />} />
-            <Route path="/vehicleDetails" element={<VehicleDetails />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/availableVehicles" element={<AvailableVehicles />} />
-            <Route path="/checkoutPage" element={<CheckoutPage />} />
             <Route path="/razorpay" element={<Razorpay />} />
           </Route>
 

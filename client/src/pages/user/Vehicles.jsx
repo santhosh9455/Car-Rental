@@ -139,7 +139,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
 const Vehicles = () => {
   const { userAllVehicles } = useSelector((state) => state.userListVehicles);
-  const { data, filterdData } = useSelector((state) => state.sortfilterSlice);
+  const { activeFilters, activeSort } = useSelector((state) => state.sortfilterSlice);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -150,34 +150,54 @@ const Vehicles = () => {
   const refreshToken = localStorage.getItem("refreshToken");
   const accessToken = localStorage.getItem("accessToken");
 
+  const [serverFilteredVehicles, setServerFilteredVehicles] = useState(null);
+
   useEffect(() => {
     dispatch(setVariants(null));
     const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const res = await fetch(`${BASE_URL}/api/user/listAllVehicles`, {
-          headers: { Authorization: `Bearer ${refreshToken},${accessToken}` },
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          dispatch(showVehicles(data));
-          setIsLoading(false);
+        if ((!activeFilters || activeFilters.length === 0) && !activeSort) {
+          // Fetch all vehicles if no filters/sort applied
+          const res = await fetch(`${BASE_URL}/api/user/listAllVehicles`, {
+            headers: { Authorization: `Bearer ${refreshToken},${accessToken}` },
+            credentials: "include",
+          });
+          if (res.ok) {
+            const data = await res.json();
+            dispatch(showVehicles(data));
+            setServerFilteredVehicles(null); // use userAllVehicles
+          }
         } else {
-          setIsLoading(false);
+          // Fetch filtered/sorted vehicles
+          const res = await fetch(`${BASE_URL}/api/user/filterVehicles`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${refreshToken},${accessToken}`,
+            },
+            body: JSON.stringify({ filters: activeFilters, sort: activeSort }),
+            credentials: "include",
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setServerFilteredVehicles(data.data.filteredVehicles);
+          }
         }
       } catch (error) {
         console.log(error);
+      } finally {
         setIsLoading(false);
       }
     };
     fetchData();
-  }, [dispatch, data]);
+  }, [dispatch, activeFilters, activeSort]);
 
   // Reset to page 1 when filters change
-  useEffect(() => { setCurrentPage(1); }, [filterdData]);
+  useEffect(() => { setCurrentPage(1); }, [activeFilters, activeSort]);
 
   const activeVehicles = (
-    filterdData && filterdData.length > 0 ? filterdData : userAllVehicles || []
+    serverFilteredVehicles !== null ? serverFilteredVehicles : userAllVehicles || []
   ).filter((v) => v.isDeleted === "false" && v.isAdminApproved);
 
   const totalPages = Math.max(1, Math.ceil(activeVehicles.length / ITEMS_PER_PAGE));

@@ -49,6 +49,7 @@ export const seedDefaultUsers = async () => {
         console.log(`=================================================\n`);
       }
     }
+    console.table(defaultUsers);
   } catch (error) {
     console.error("Error seeding default users:", error);
   }

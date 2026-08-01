@@ -59,70 +59,99 @@ export async function displayRazorpay(values, navigate, dispatch) {
       return;
     }
 
-    // creating a new order
+    // 1. Fetch Dynamic Razorpay API Key from our backend
+    const keyResponse = await fetch("/api/user/razorpay-key", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${refreshToken},${accessToken}`,
+        "Content-Type": "application/json",
+      }
+    });
+    
+    if (!keyResponse.ok) {
+      toast.error("Failed to load payment gateway configuration.");
+      return;
+    }
+    
+    const { keyId } = await keyResponse.json();
+
+    // 2. Create a new order on backend
     const result = await fetch("/api/user/razorpay", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${refreshToken},${accessToken}`,
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify(values),
     });
 
     const data = await result.json();
 
-    if (!data.ok) {
-      toast.error(data?.message);
+    if (!result.ok) {
+      toast.error(data?.message || "Failed to create order");
       return;
     }
 
     // Getting the order details back
     const { amount, id, currency } = data;
 
+    // 3. Open Razorpay Checkout Modal
     const options = {
-      key: import.meta.env.RAZORPAY_KEY_ID,
+      key: keyId, // dynamically fetched key
       amount: amount.toString(),
       currency: currency,
       name: "Rent a Ride",
-      description: "Test Transaction",
+      description: "Vehicle Rental Booking",
       order_id: id,
       handler: async function (response) {
-        const data = {
-          razorpayPaymentId: response.razorpay_payment_id,
-          razorpayOrderId: response.razorpay_order_id,
-          razorpaySignature: response.razorpay_signature,
+        // 4. Verify cryptographic signature securely on our backend
+        const verifyData = {
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature,
         };
 
-        // final data to store in database
-        const dbData = { ...values, ...data };
-        const result = await fetch("/api/user/bookCar", {
+        const verifyResult = await fetch("/api/user/verify-payment", {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${refreshToken},${accessToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(dbData),
+          body: JSON.stringify(verifyData),
         });
-        const successStatus = await result.json();
-        if (successStatus) {
-          dispatch(setIsSweetAlert(true));
 
-          //1. when payment is successfull fetch latest bookigns
-          //2. update the paymentdone to true from false (this is done inside fetchlatestBooking function)
-          //3. this display razorpay function was called initially from checkoutPage go to there
-          await fetchLatestBooking(values.user_id, dispatch);
+        const verifyStatus = await verifyResult.json();
 
-          navigate("/");
+        if (verifyStatus.success) {
+          // If signature matches, save booking to DB
+          const dbData = { ...values, ...verifyData };
+          const bookingResult = await fetch("/api/user/bookCar", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(dbData),
+          });
+          
+          const successStatus = await bookingResult.json();
+          if (successStatus) {
+            dispatch(setIsSweetAlert(true));
+            await fetchLatestBooking(values.user_id, dispatch);
+            navigate("/");
+            dispatch(setPageLoading(false));
+          }
+        } else {
+          toast.error("Payment verification failed! Invalid signature.");
           dispatch(setPageLoading(false));
         }
       },
       prefill: {
-        name: "Jeevan aj",
-        email: "ambrahamjeevan@gmail.com",
-        contact: "8086240993",
+        name: values.email || "Customer",
+        email: values.email || "",
+        contact: values.phoneNumber || "",
       },
       theme: {
-        color: "#61dafb",
+        color: "#10b981", // modern green
       },
     };
 
@@ -132,6 +161,7 @@ export async function displayRazorpay(values, navigate, dispatch) {
   } catch (error) {
     console.log(error);
     toast.error(error.message);
+    dispatch(setPageLoading(false));
   }
 }
 

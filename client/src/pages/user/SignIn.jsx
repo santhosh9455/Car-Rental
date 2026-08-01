@@ -156,7 +156,7 @@ function SignIn() {
                 </button>
               </form>
 
-              <div className="relative my-2">
+              {/* <div className="relative my-2">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-200" />
                 </div>
@@ -164,7 +164,7 @@ function SignIn() {
                   <span className="px-3 bg-white text-slate-400 font-medium">Or continue with</span>
                 </div>
               </div>
-              <OAuth />
+              <OAuth /> */}
             </div>
           </motion.div>
         </div>

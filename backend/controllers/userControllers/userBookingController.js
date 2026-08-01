@@ -5,6 +5,9 @@ import Razorpay from "razorpay";
 import { availableAtDate } from "../../services/checkAvailableVehicle.js";
 import Vehicle from "../../models/vehicleModel.js";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
+import SystemSettings from "../../models/SystemSettingsModel.js";
+import Payment from "../../models/PaymentModel.js";
 
 export const BookCar = async (req, res, next) => {
   try {
@@ -60,7 +63,7 @@ export const BookCar = async (req, res, next) => {
 //createing razorpay instance
 export const razorpayOrder = async (req, res, next) => {
   try {
-    const { totalPrice, dropoff_location, pickup_district, pickup_location } =
+    const { totalPrice, dropoff_location, pickup_district, pickup_location, user_id, vehicle_id } =
       req.body;
 
     console.log(totalPrice)
@@ -73,9 +76,14 @@ export const razorpayOrder = async (req, res, next) => {
 
       return next(errorHandler(400, "Missing Required Feilds Process Cancelled")) ;
     }
+    const settings = await SystemSettings.findOne();
+    if (!settings || settings.razorpayKeyId === "placeholder_key") {
+      return next(errorHandler(500, "Razorpay is not configured on the server."));
+    }
+
     const instance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_SECRET,
+      key_id: settings.razorpayKeyId,
+      key_secret: settings.razorpaySecret,
     });
 
     const options = {
@@ -86,10 +94,75 @@ export const razorpayOrder = async (req, res, next) => {
     const order = await instance.orders.create(options);
 
     if (!order) return res.status(500).send("Some error occured");
+
+    // Track the payment initiation
+    await Payment.create({
+      userId: user_id,
+      vehicleId: vehicle_id,
+      amount: totalPrice,
+      razorpayOrderId: order.id,
+      status: "created",
+    });
+
     res.status(200).json(order);
   } catch (error) {
     console.log(error);
     next(errorHandler(500, "error occured in razorpayorder"));
+  }
+};
+
+export const getRazorpayKey = async (req, res, next) => {
+  try {
+    const settings = await SystemSettings.findOne();
+    if (!settings || !settings.razorpayKeyId) {
+      return next(errorHandler(404, "Razorpay key not configured"));
+    }
+    // Only send the public key ID, never the secret
+    res.status(200).json({ keyId: settings.razorpayKeyId });
+  } catch (error) {
+    next(errorHandler(500, "Error fetching Razorpay key"));
+  }
+};
+
+export const verifyPayment = async (req, res, next) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    const settings = await SystemSettings.findOne();
+    if (!settings || !settings.razorpaySecret) {
+      return next(errorHandler(500, "Razorpay secret not configured"));
+    }
+
+    // Cryptographic signature verification
+    const sign = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSign = crypto
+      .createHmac("sha256", settings.razorpaySecret)
+      .update(sign.toString())
+      .digest("hex");
+
+    const payment = await Payment.findOne({ razorpayOrderId: razorpay_order_id });
+
+    if (razorpay_signature === expectedSign) {
+      if (payment) {
+        payment.razorpayPaymentId = razorpay_payment_id;
+        payment.razorpaySignature = razorpay_signature;
+        payment.status = "captured";
+        payment.systemStatus = "verified";
+        payment.reconciled = true;
+        await payment.save();
+      }
+      return res.status(200).json({ success: true, message: "Payment verified successfully" });
+    } else {
+      if (payment) {
+        payment.status = "failed";
+        payment.systemStatus = "failed";
+        await payment.save();
+      }
+      return res.status(400).json({ success: false, message: "Invalid signature sent!" });
+    }
+  } catch (error) {
+    console.log(error);
+    next(errorHandler(500, "Error verifying payment"));
   }
 };
 
@@ -216,11 +289,12 @@ export const filterVehicles = async (req, res, next) => {
       next(errorHandler(401, "bad request no body"));
       return;
     }
-    const transformedData = req.body;
-    if (!transformedData) {
-      next(errorHandler(401, "select filter option first"));
+    const { filters, sort } = req.body;
+    if (!filters && !sort) {
+      next(errorHandler(401, "select filter or sort option first"));
     }
     const generateMatchStage = (data) => {
+      if (!data || data.length === 0) return { $match: {} };
       const carTypes = [];
       data.forEach((cur) => {
         if (cur.type === "car_type") {
@@ -258,9 +332,23 @@ export const filterVehicles = async (req, res, next) => {
       };
     };
 
-    const matchStage = generateMatchStage(transformedData);
+    const matchStage = generateMatchStage(filters);
 
-    const filteredVehicles = await Vehicle.aggregate([matchStage]);
+    // Build sort stage
+    let sortStage = {};
+    if (sort) {
+      if (sort === "price_asc") sortStage = { $sort: { price: 1 } };
+      else if (sort === "price_desc") sortStage = { $sort: { price: -1 } };
+      else if (sort === "year_desc") sortStage = { $sort: { year_made: -1 } };
+      else if (sort === "year_asc") sortStage = { $sort: { year_made: 1 } };
+    }
+
+    const pipeline = [matchStage];
+    if (Object.keys(sortStage).length > 0) {
+      pipeline.push(sortStage);
+    }
+
+    const filteredVehicles = await Vehicle.aggregate(pipeline);
     if (!filteredVehicles) {
       next(errorHandler(401, "no vehicles found"));
       return;

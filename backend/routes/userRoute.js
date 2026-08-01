@@ -4,7 +4,7 @@ import { verifyToken } from "../utils/verifyUser.js";
 import { updateUser ,deleteUser , signOut } from "../controllers/userControllers/userController.js";
 import { checkAvailability, listAllVehicles, searchCar, showVehicleDetails } from "../controllers/userControllers/userAllVehiclesController.js";
 import { editUserProfile } from "../controllers/userControllers/userProfileController.js";
-import { BookCar, razorpayOrder, getVehiclesWithoutBooking, filterVehicles, showOneofkind, showAllVariants, findBookingsOfUser, sendBookingDetailsEamil, latestbookings } from "../controllers/userControllers/userBookingController.js";
+import { BookCar, razorpayOrder, getVehiclesWithoutBooking, filterVehicles, showOneofkind, showAllVariants, findBookingsOfUser, sendBookingDetailsEamil, latestbookings, getRazorpayKey, verifyPayment } from "../controllers/userControllers/userBookingController.js";
 
 
 const router = express.Router()
@@ -20,6 +20,8 @@ router.get('/listAllVehicles', listAllVehicles)
 router.post('/showVehicleDetails', showVehicleDetails)
 router.post('/editUserProfile/:id', verifyToken, editUserProfile)
 router.post('/razorpay', verifyToken, razorpayOrder)
+router.get('/razorpay-key', verifyToken, getRazorpayKey)
+router.post('/verify-payment', verifyToken, verifyPayment)
 router.post('/bookCar', verifyToken, BookCar)
 router.post('/filterVehicles', filterVehicles)
 router.post('/getVehiclesWithoutBooking', getVehiclesWithoutBooking, showAllVariants)

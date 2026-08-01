@@ -7,6 +7,7 @@ import { IoMdContacts } from 'react-icons/io';
 import { RiContactsLine, RiStockLine } from 'react-icons/ri';
 import { IoHomeOutline } from "react-icons/io5";
 import { GiLouvrePyramid } from 'react-icons/gi';
+import { IoSettingsOutline } from "react-icons/io5";
 
 
 
@@ -66,6 +67,10 @@ export const links = [
         {
           name: 'color-picker',
           icon: <BiColorFill />,
+        },
+        {
+          name: 'settings',
+          icon: <IoSettingsOutline />,
         },
       ],
     },
