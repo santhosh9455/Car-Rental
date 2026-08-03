@@ -39,7 +39,7 @@ const PaymentSchema = new mongoose.Schema(
     },
     systemStatus: {
       type: String,
-      enum: ["pending", "verified", "failed"],
+      enum: ["pending", "paid", "failed", "cancelled"],
       default: "pending",
     },
     reconciled: {

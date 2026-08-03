@@ -96,13 +96,23 @@ export const razorpayOrder = async (req, res, next) => {
     if (!order) return res.status(500).send("Some error occured");
 
     // Track the payment initiation
-    await Payment.create({
-      userId: user_id,
-      vehicleId: vehicle_id,
-      amount: totalPrice,
-      razorpayOrderId: order.id,
-      status: "created",
-    });
+    let payment = await Payment.findOne({ userId: user_id, systemStatus: "pending" });
+    if (payment) {
+      payment.vehicleId = vehicle_id;
+      payment.amount = totalPrice;
+      payment.razorpayOrderId = order.id;
+      payment.status = "created";
+      await payment.save();
+    } else {
+      await Payment.create({
+        userId: user_id,
+        vehicleId: vehicle_id,
+        amount: totalPrice,
+        razorpayOrderId: order.id,
+        status: "created",
+        systemStatus: "pending",
+      });
+    }
 
     res.status(200).json(order);
   } catch (error) {
@@ -147,7 +157,7 @@ export const verifyPayment = async (req, res, next) => {
         payment.razorpayPaymentId = razorpay_payment_id;
         payment.razorpaySignature = razorpay_signature;
         payment.status = "captured";
-        payment.systemStatus = "verified";
+        payment.systemStatus = "paid";
         payment.reconciled = true;
         await payment.save();
       }

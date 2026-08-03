@@ -40,6 +40,10 @@ export const links = [
           icon: <AiOutlineShoppingCart />,
         },
         {
+          name: 'payments',
+          icon: <AiOutlineShoppingCart />,
+        },
+        {
           name: 'employees',
           icon: <IoMdContacts />,
         },

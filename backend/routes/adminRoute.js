@@ -10,6 +10,7 @@ import { getCarModelData } from "../controllers/adminControllers/masterCollectio
 import { approveVendorVehicleRequest, fetchVendorVehilceRequests, rejectVendorVehicleRequest } from "../controllers/adminControllers/vendorVehilceRequests.js"
 import { allBookings, changeStatus } from "../controllers/adminControllers/bookingsController.js"
 import { getSettings, updateSettings } from "../controllers/adminControllers/settingsController.js"
+import { getPayments, updatePaymentStatus, reconcilePayment } from "../controllers/adminControllers/paymentController.js"
 import { verifyToken } from "../utils/verifyUser.js"
 
 
@@ -34,5 +35,8 @@ router.get('/allBookings',allBookings)
 router.post('/changeStatus',changeStatus)
 router.get('/settings', getSettings)
 router.put('/settings', updateSettings)
+router.get('/payments', getPayments)
+router.put('/payments/:id/status', updatePaymentStatus)
+router.get('/payments/:id/reconcile', reconcilePayment)
 
 export default router

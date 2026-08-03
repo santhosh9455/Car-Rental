@@ -59,7 +59,9 @@ function SignIn() {
       } else if (data.isUser) {
         dispatch(signInSuccess(data));
         dispatch(loadingEnd());
-        navigate("/");
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get("redirect") || "/";
+        navigate(redirect);
       } else {
         dispatch(loadingEnd());
         dispatch(signInFailure(data));

@@ -116,7 +116,7 @@ const CheckoutPage = () => {
   const handlePlaceOrder = async (formData) => {
     if (!currentUser) {
       toast.error("Please sign in to place your order.");
-      setTimeout(() => navigate("/signin"), 1500);
+      setTimeout(() => navigate("/signin?redirect=/checkoutPage"), 1500);
       return;
     }
 
