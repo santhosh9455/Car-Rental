@@ -46,8 +46,8 @@ function App() {
             <Route path="/vehicles" element={<Vehicles />} />
             <Route path="/enterprise" element={<Enterprise />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/vehicleDetails" element={<VehicleDetails />} />
-            <Route path="/checkoutPage" element={<CheckoutPage />} />
+            <Route path="/vehicleDetails/:id" element={<VehicleDetails />} />
+            <Route path="/checkoutPage/:id" element={<CheckoutPage />} />
           </Route>
 
           {/* components without Navbar */}

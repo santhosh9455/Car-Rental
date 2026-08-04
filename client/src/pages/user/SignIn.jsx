@@ -131,7 +131,7 @@ function SignIn() {
                 <div className="flex items-center justify-between text-sm">
                   <p className="text-slate-500">
                     No account?{" "}
-                    <Link to="/signup" className="font-semibold text-green-600 hover:text-green-700">Sign Up</Link>
+                    <Link to={`/signup${window.location.search}`} className="font-semibold text-green-600 hover:text-green-700">Sign Up</Link>
                   </p>
                   <a href="#" className="font-semibold text-slate-500 hover:text-slate-700">Forgot password?</a>
                 </div>

@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { FaStar, FaCalendarAlt, FaCog, FaCarSide, FaBuilding } from "react-icons/fa";
 import { MdAirlineSeatReclineExtra, MdCurrencyRupee } from "react-icons/md";
 import { BsFillFuelPumpFill } from "react-icons/bs";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { showVehicles } from "../../redux/user/listAllVehicleSlice";
+import { setVehicleDetail } from "../../redux/user/listAllVehicleSlice";
 import { motion } from "framer-motion";
 import { IconArrowLeft, IconShieldCheck, IconRefresh, IconMapPinFilled, IconCalendarEvent } from "@tabler/icons-react";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -52,6 +52,7 @@ const schema = z.object({
 });
 
 const VehicleDetails = () => {
+  const { id } = useParams();
   const { singleVehicleDetail } = useSelector((state) => state.userListVehicles);
   const { districtData } = useSelector((state) => state.modelDataSlice);
   const { selectedDistrict, wholeData, locationsOfDistrict } = useSelector((state) => state.selectRideSlice);
@@ -94,22 +95,28 @@ const VehicleDetails = () => {
 
   useEffect(() => {
     fetchLov();
-    if (!singleVehicleDetail || !singleVehicleDetail._id) {
-      const fetchData = async () => {
-        try {
-          const res = await fetch("/api/user/listAllVehicles", {
-            headers: { Authorization: `Bearer ${refreshToken},${accessToken}` },
-          });
-          if (!res.ok) return;
-          const data = await res.json();
-          dispatch(showVehicles(data));
-        } catch (error) {
-          console.log(error);
-        }
-      };
-      fetchData();
+    if (!singleVehicleDetail || singleVehicleDetail._id !== id) {
+      if (id) {
+        const fetchSingleVehicle = async () => {
+          try {
+            const res = await fetch("/api/user/showVehicleDetails", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ id }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              dispatch(setVehicleDetail(data));
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        };
+        fetchSingleVehicle();
+      }
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     if (selectedDistrict !== null) {
@@ -130,7 +137,16 @@ const VehicleDetails = () => {
   const handleBook = async (data) => {
     // Save to redux booking slice so checkout page has it
     dispatch(setSelectedData(data));
-    navigate("/checkoutPage");
+    
+    // Pass Trip Details in Route
+    const searchParams = new URLSearchParams();
+    if (data.pickup_district) searchParams.set("pickup_district", data.pickup_district);
+    if (data.pickup_location) searchParams.set("pickup_location", data.pickup_location);
+    if (data.dropoff_location) searchParams.set("dropoff_location", data.dropoff_location);
+    if (data.pickuptime?.$d) searchParams.set("pickuptime", data.pickuptime.$d.toISOString());
+    if (data.dropofftime?.$d) searchParams.set("dropofftime", data.dropofftime.$d.toISOString());
+
+    navigate(`/checkoutPage/${id}?${searchParams.toString()}`);
   };
 
   if (!singleVehicleDetail || !singleVehicleDetail._id) {

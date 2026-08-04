@@ -35,7 +35,7 @@ function SignUp() {
       setLoading(false);
       if (data.succes === false) { setError(true); return; }
       setError(false);
-      navigate("/signin");
+      navigate("/signin" + window.location.search);
     } catch (error) {
       setLoading(false);
       setError(true);
@@ -116,7 +116,7 @@ function SignUp() {
 
                 <p className="text-sm text-slate-500">
                   Already have an account?{" "}
-                  <Link to="/signin" className="font-semibold text-green-600 hover:text-green-700">Sign In</Link>
+                  <Link to={`/signin${window.location.search}`} className="font-semibold text-green-600 hover:text-green-700">Sign In</Link>
                 </p>
 
                 {isError && (

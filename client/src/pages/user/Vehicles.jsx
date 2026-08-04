@@ -31,7 +31,7 @@ export const onVehicleDetail = async (id, dispatch, navigate) => {
       dispatch(signOut());
     }
     dispatch(setVehicleDetail(data));
-    navigate("/vehicleDetails");
+    navigate(`/vehicleDetails/${id}`);
   } catch (error) {
     console.log(error);
   }

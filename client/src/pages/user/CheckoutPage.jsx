@@ -7,13 +7,14 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { displayRazorpay } from "./Razorpay";
 import { setPageLoading } from "../../redux/user/userSlice";
 import { setisPaymentDone } from "../../redux/user/LatestBookingsSlice";
 import { toast, Toaster } from "sonner";
 import { motion } from "framer-motion";
 import { IconCar, IconMapPin, IconCalendar, IconMail, IconPhone, IconHome, IconTicket, IconArrowRight, IconShieldCheck } from "@tabler/icons-react";
+import { setVehicleDetail } from "../../redux/user/listAllVehicleSlice";
 
 export async function sendBookingDetailsEmail(toEmail, bookingDetails, dispatch) {
   try {
@@ -52,14 +53,23 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const {
-    pickup_district,
-    pickup_location,
-    dropoff_location,
-    dropofftime,
-    pickupDate,
-    dropoffDate,
-  } = useSelector((state) => state.bookingDataSlice);
+  const [searchParams] = useSearchParams();
+  const { id } = useParams();
+
+  const reduxBookingData = useSelector((state) => state.bookingDataSlice);
+  
+  const pickup_district = searchParams.get("pickup_district") || reduxBookingData.pickup_district;
+  const pickup_location = searchParams.get("pickup_location") || reduxBookingData.pickup_location;
+  const dropoff_location = searchParams.get("dropoff_location") || reduxBookingData.dropoff_location;
+  
+  const urlPickuptime = searchParams.get("pickuptime");
+  const urlDropofftime = searchParams.get("dropofftime");
+  
+  const pickupDate = urlPickuptime ? { humanReadable: urlPickuptime } : reduxBookingData.pickupDate;
+  const dropoffDate = urlDropofftime ? { humanReadable: urlDropofftime } : reduxBookingData.dropoffDate;
+  const dropofftime = urlDropofftime 
+    ? { hour: new Date(urlDropofftime).getHours().toString().padStart(2, '0'), minute: new Date(urlDropofftime).getMinutes().toString().padStart(2, '0') }
+    : reduxBookingData.dropofftime;
 
   const { data, paymentDone } = useSelector((state) => state.latestBookingsSlice);
   const currentUser = useSelector((state) => state.user.currentUser);
@@ -161,6 +171,30 @@ const CheckoutPage = () => {
       sendEmail();
     }
   }, [paymentDone, data, email, dispatch]);
+
+  useEffect(() => {
+    if (!singleVehicleDetail || singleVehicleDetail._id !== id) {
+      if (id) {
+        const fetchSingleVehicle = async () => {
+          try {
+            const res = await fetch("/api/user/showVehicleDetails", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ id }),
+            });
+            if (res.ok) {
+              const fetchedData = await res.json();
+              dispatch(setVehicleDetail(fetchedData));
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        };
+        fetchSingleVehicle();
+      }
+    }
+  }, [id, singleVehicleDetail, dispatch]);
 
   if (!singleVehicleDetail) {
     return (
@@ -321,7 +355,7 @@ const CheckoutPage = () => {
                     <div className="text-amber-500 mt-0.5">⚠️</div>
                     <div className="text-sm text-amber-800">
                       <span className="font-semibold">You are not logged in.</span><br/>
-                      You must <button onClick={() => navigate('/signin')} className="underline font-bold text-amber-900 hover:text-amber-700">Sign In</button> to complete this booking.
+                      You must <button onClick={() => navigate('/signin?redirect=/checkoutPage')} className="underline font-bold text-amber-900 hover:text-amber-700">Sign In</button> to complete this booking.
                     </div>
                   </div>
                 )}

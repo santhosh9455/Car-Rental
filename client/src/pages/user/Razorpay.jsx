@@ -124,10 +124,15 @@ export async function displayRazorpay(values, navigate, dispatch) {
 
         if (verifyStatus.success) {
           // If signature matches, save booking to DB
-          const dbData = { ...values, ...verifyData };
+          const dbData = { 
+            ...values, 
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id
+          };
           const bookingResult = await fetch("/api/user/bookCar", {
             method: "POST",
             headers: {
+              Authorization: `Bearer ${refreshToken},${accessToken}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify(dbData),
