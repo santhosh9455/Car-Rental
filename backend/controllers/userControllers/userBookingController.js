@@ -191,7 +191,7 @@ export const getVehiclesWithoutBooking = async (req, res, next) => {
       return next(errorHandler(409, "pickup , dropffdate  is required"));
 
     // Check if pickupDate is before dropOffDate
-    if (pickupDate >= dropOffDate)
+    if (new Date(pickupDate) >= new Date(dropOffDate))
       return next(errorHandler(409, "Invalid date range"));
 
     const vehiclesAvailableAtDate = await availableAtDate(

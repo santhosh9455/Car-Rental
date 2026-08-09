@@ -17,10 +17,9 @@ const SideBar = () => {
   const dispatch = useDispatch();
 
   const activeLink =
-    "flex items-center gap-5 pl-4 pt-3 pb-2.5 rounded-lg text-black bg-blue-50 text-md  m-2";
-    //in normal mode there was dark:text-gray-200 i removed it
+    "flex items-center gap-4 pl-4 pt-3 pb-2.5 rounded-xl text-emerald-900 bg-emerald-50 shadow-md text-md font-bold mx-2 my-1 transition-all";
   const normalLink =
-    "flex items-center gap-5 pl-4 pt-3 pb-2.5 rounded-lg  text-md text-gray-700   dark:hover:text-black hover:bg-slate-100 m-2";
+    "flex items-center gap-4 pl-4 pt-3 pb-2.5 rounded-xl text-md text-emerald-100 hover:text-white hover:bg-emerald-700 font-medium mx-2 my-1 transition-all";
 
   //SignOut
   const handleSignout = async () => {
@@ -35,17 +34,17 @@ const SideBar = () => {
   };
 
   return (
-    <div className="ml-3 h-screen md:overflow-hidden overflow-auto md:hover:overflow-auto pb-10">
+    <div className="h-screen md:overflow-hidden overflow-auto md:hover:overflow-auto pb-10 bg-emerald-900 shadow-xl border-r border-emerald-800">
       {activeMenu && (
         <>
           <div className="flex justify-between items-center">
             <Link
               to={`/adminDashboard`}
               onClick={() => {}}
-              className="items-center flex gap-3 mt-4 ml-3 text-xl font-extrabold text-blue-500 tracking-tight "
+              className="items-center flex gap-3 mt-6 ml-6 text-2xl font-extrabold text-white tracking-tight"
             >
-              <SiShopware />
-              Rent a Ride
+              <SiShopware className="text-emerald-400" />
+              <span>Rent<span className="text-emerald-400">a</span>Ride</span>
             </Link>
             <TooltipComponent content={"menu"} position="BottomCenter">
               <button
@@ -59,7 +58,7 @@ const SideBar = () => {
           <div className="mt-10">
             {links.map((cur, idx) => (
               <div key={idx}>
-                <p className="text-gray-700 m-3 mt-4 text-uppercase">{cur.title}</p>
+                <p className="text-emerald-400/80 font-bold text-xs uppercase tracking-widest mx-6 mt-8 mb-3">{cur.title}</p>
                 {cur.links.map((link) => (
                   <NavLink
                     to={`/adminDashboard/${link.name}`}
@@ -74,20 +73,14 @@ const SideBar = () => {
                     }
                   >
                     {link.icon}
-                    <span className="capitalize text-gray-600">{link.name}</span>
+                    <span className="capitalize">{link.name}</span>
                   </NavLink>
                 ))}
               </div>
             ))}
-            <div className="flex items-center mt-10 gap-2">
-              <button
-                type="button"
-                className="ml-4 text-red-400"
-                onClick={handleSignout}
-              >
-                SignOut
-              </button>
-              <CiLogout />
+            <div className="flex items-center mt-12 mx-4 gap-3 text-emerald-100 hover:text-white hover:bg-red-500/20 p-3 rounded-xl cursor-pointer transition-all font-medium border border-transparent hover:border-red-500/30" onClick={handleSignout}>
+              <CiLogout size={22} className="text-red-400" />
+              <span>Sign Out</span>
             </div>
           </div>
         </>

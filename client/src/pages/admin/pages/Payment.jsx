@@ -5,9 +5,13 @@ import {
   IconEye,
   IconX,
   IconRefresh,
-  IconCurrencyRupee
+  IconCurrencyRupee,
+  IconPlus,
+  IconEdit,
+  IconTrash
 } from "@tabler/icons-react";
 import { Header } from "../components";
+import Swal from "sweetalert2";
 
 const Payment = () => {
   const [payments, setPayments] = useState([]);
@@ -23,6 +27,16 @@ const Payment = () => {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reconciling, setReconciling] = useState(false);
+
+  // CRUD Modals State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    amount: "",
+    systemStatus: "pending",
+    userId: "",
+    vehicleId: ""
+  });
 
   const fetchPayments = async () => {
     setLoading(true);
@@ -101,6 +115,90 @@ const Payment = () => {
     }
   };
 
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        setIsAddModalOpen(false);
+        fetchPayments();
+      } else {
+        toast.error(data.message || "Failed to create payment");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error creating payment");
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`/api/admin/payments/${selectedPayment._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        setIsEditModalOpen(false);
+        fetchPayments();
+      } else {
+        toast.error(data.message || "Failed to update payment");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error updating payment");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirm = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (confirm.isConfirmed) {
+      try {
+        const res = await fetch(`/api/admin/payments/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (data.success) {
+          Swal.fire("Deleted!", "The payment has been deleted.", "success");
+          fetchPayments();
+        } else {
+          Swal.fire("Error", data.message || "Failed to delete payment", "error");
+        }
+      } catch (error) {
+        Swal.fire("Error", "Could not delete payment", "error");
+      }
+    }
+  };
+
+  const openAddModal = () => {
+    setFormData({ amount: "", systemStatus: "pending", userId: "", vehicleId: "" });
+    setIsAddModalOpen(true);
+  };
+
+  const openEditModal = (payment) => {
+    setSelectedPayment(payment);
+    setFormData({
+      amount: payment.amount || "",
+      systemStatus: payment.systemStatus || "pending",
+      userId: payment.userId?._id || payment.userId || "",
+      vehicleId: payment.vehicleId?._id || payment.vehicleId || ""
+    });
+    setIsEditModalOpen(true);
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case "paid":
@@ -150,15 +248,29 @@ const Payment = () => {
     {
       field: "actions",
       headerName: "Actions",
-      flex: 0.5,
+      flex: 1,
       sortable: false,
       renderCell: (params) => (
-        <button
-          onClick={() => handleView(params.row)}
-          className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-        >
-          <IconEye size={18} />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleView(params.row)}
+            className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <IconEye size={18} />
+          </button>
+          <button
+            onClick={() => openEditModal(params.row)}
+            className="p-1.5 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+          >
+            <IconEdit size={18} />
+          </button>
+          <button
+            onClick={() => handleDelete(params.row._id)}
+            className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+          >
+            <IconTrash size={18} />
+          </button>
+        </div>
       ),
     },
   ];
@@ -166,7 +278,16 @@ const Payment = () => {
   return (
     <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
       <Toaster position="top-right" richColors />
-      <Header category="Page" title="Payment Requests" />
+      <div className="flex justify-between items-center">
+        <Header category="Page" title="Payment Requests" />
+        <button
+          onClick={openAddModal}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition shadow-sm font-medium"
+        >
+          <IconPlus size={20} />
+          <span>Add Request</span>
+        </button>
+      </div>
       
       <div className="h-[600px] w-full mt-5">
         <DataGrid
@@ -267,6 +388,93 @@ const Payment = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add / Edit Payment Modal */}
+      {(isAddModalOpen || isEditModalOpen) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h3 className="text-xl font-bold text-slate-800">
+                {isAddModalOpen ? "Add Payment Request" : "Edit Payment Request"}
+              </h3>
+              <button
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setIsEditModalOpen(false);
+                }}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <IconX size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={isAddModalOpen ? handleAddSubmit : handleEditSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Amount</label>
+                <input 
+                  type="number" 
+                  required 
+                  value={formData.amount}
+                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">User ID</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.userId}
+                  onChange={(e) => setFormData({...formData, userId: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Vehicle ID</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.vehicleId}
+                  onChange={(e) => setFormData({...formData, vehicleId: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">System Status</label>
+                <select 
+                  value={formData.systemStatus}
+                  onChange={(e) => setFormData({...formData, systemStatus: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid</option>
+                  <option value="failed">Failed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setIsEditModalOpen(false);
+                  }}
+                  className="px-4 py-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {isAddModalOpen ? "Add Payment" : "Save Changes"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

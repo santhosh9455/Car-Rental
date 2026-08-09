@@ -100,3 +100,58 @@ export const reconcilePayment = async (req, res, next) => {
     next(errorHandler(500, "Error reconciling payment"));
   }
 };
+
+export const createPayment = async (req, res, next) => {
+  try {
+    // Allows admin to manually create a payment record
+    const { amount, systemStatus, userId, vehicleId } = req.body;
+    const newPayment = new Payment({
+      amount,
+      systemStatus: systemStatus || "pending",
+      userId,
+      vehicleId,
+      status: "created" // Default Razorpay status for manual records
+    });
+    
+    await newPayment.save();
+    res.status(201).json({ success: true, data: newPayment, message: "Payment request created successfully." });
+  } catch (error) {
+    console.error(error);
+    next(errorHandler(500, "Error creating payment"));
+  }
+};
+
+export const updatePayment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { amount, systemStatus, userId, vehicleId } = req.body;
+    
+    const payment = await Payment.findById(id);
+    if (!payment) return next(errorHandler(404, "Payment not found"));
+    
+    if (amount !== undefined) payment.amount = amount;
+    if (systemStatus !== undefined) payment.systemStatus = systemStatus;
+    if (userId !== undefined) payment.userId = userId;
+    if (vehicleId !== undefined) payment.vehicleId = vehicleId;
+    
+    await payment.save();
+    res.status(200).json({ success: true, data: payment, message: "Payment updated successfully." });
+  } catch (error) {
+    console.error(error);
+    next(errorHandler(500, "Error updating payment"));
+  }
+};
+
+export const deletePayment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const payment = await Payment.findByIdAndDelete(id);
+    
+    if (!payment) return next(errorHandler(404, "Payment not found"));
+    
+    res.status(200).json({ success: true, message: "Payment deleted successfully." });
+  } catch (error) {
+    console.error(error);
+    next(errorHandler(500, "Error deleting payment"));
+  }
+};

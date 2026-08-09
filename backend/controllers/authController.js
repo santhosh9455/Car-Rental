@@ -145,7 +145,6 @@ export const signIn = async (req, res, next) => {
     // 7 days
 
     res.status(200).json(responsePayload);
-    // next() removed: calling next() after res.json() is a bug — it triggers the error handler
   } catch (error) {
     next(error);
     console.log(error);
@@ -160,7 +159,8 @@ export const google = async (req, res, next) => {
     }
     if (user) {
       const { password: hashedPassword, ...rest } = user;
-      const token = Jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN);
+      const refreshToken = Jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: "7d" });
+      await User.updateOne({ _id: user._id }, { refreshToken });
 
       res
         .cookie("access_token", token, {
@@ -170,7 +170,7 @@ export const google = async (req, res, next) => {
           secure: true,
         })
         .status(200)
-        .json(rest);
+        .json({ ...rest, accessToken: token, refreshToken });
     } else {
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
@@ -191,7 +191,10 @@ export const google = async (req, res, next) => {
       const savedUser = await newUser.save();
       const userObject = savedUser.toObject();
 
-      const token = Jwt.sign({ id: newUser._id }, process.env.ACCESS_TOKEN);
+      const token = Jwt.sign({ id: newUser._id }, process.env.ACCESS_TOKEN, { expiresIn: "15m" });
+      const refreshToken = Jwt.sign({ id: newUser._id }, process.env.REFRESH_TOKEN, { expiresIn: "7d" });
+      await User.updateOne({ _id: newUser._id }, { refreshToken });
+      
       const { password: hashedPassword2, ...rest } = userObject;
       res
         .cookie("access_token", token, {
@@ -201,7 +204,7 @@ export const google = async (req, res, next) => {
           secure: true,
         })
         .status(200)
-        .json(rest);
+        .json({ ...rest, accessToken: token, refreshToken });
     }
   } catch (error) {
     next(error);

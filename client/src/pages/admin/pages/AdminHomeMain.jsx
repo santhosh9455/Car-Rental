@@ -1,94 +1,292 @@
-
-
-import {  LineChart, Button } from "../components";
-
-import { earningData } from "../data/dummys.jsx";
+import { useEffect, useState } from "react";
+import { ResponsiveLine } from "@nivo/line";
+import { ResponsivePie } from "@nivo/pie";
+import { ResponsiveBar } from "@nivo/bar";
+import api from "../../../utils/api";
+import { IconUsers, IconCar, IconCalendarEvent, IconCurrencyRupee } from "@tabler/icons-react";
 
 const AdminHomeMain = () => {
-  return (
-    <div className="mt-12 ">
-      {/* hero - productsIncome */}
-      <div className="flex flex-wrap lg:flex-nowrap justify-center items-center lg:items-start">
-        <div className=" dark:text-gray-200 dark:bg-secondary-dark-bg h-44 rounded-xl w-full lg:w-80 xl:w-full 2xl:w-80 p-8 pt-9 m-3  bg-hero-pattern bg-no-repeat bg-cover   bg-slate-50 xl:h-[250px] 2xl:h-44">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-gray-400">Earnings</p>
-              <p className="text-2xl text-black">$63,448.78</p>
-            </div>
-          </div>
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-          <div className="mt-6">
-            <Button
-              color="white"
-              bgColor="blue"
-              text="Download"
-              borderRadius="10px"
-              size="md"
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await api.get("/api/admin/dashboard-stats");
+        setStats(res.data);
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!stats) return <div className="p-10">Error loading dashboard</div>;
+
+  const mockBarData = [
+    { type: "Sedan", bookings: 120 },
+    { type: "SUV", bookings: 85 },
+    { type: "Hatchback", bookings: 150 },
+    { type: "Luxury", bookings: 30 },
+  ];
+
+  const mockTransactions = [
+    { id: "#TX-8742", user: "John Doe", vehicle: "Honda City", amount: "₹4,500", date: "Today, 10:30 AM", status: "Completed" },
+    { id: "#TX-8743", user: "Jane Smith", vehicle: "Hyundai Creta", amount: "₹6,200", date: "Today, 09:15 AM", status: "Pending" },
+    { id: "#TX-8744", user: "Mike Johnson", vehicle: "Maruti Swift", amount: "₹2,800", date: "Yesterday", status: "Completed" },
+    { id: "#TX-8745", user: "Sarah Williams", vehicle: "BMW X5", amount: "₹15,000", date: "Yesterday", status: "Cancelled" },
+    { id: "#TX-8746", user: "David Brown", vehicle: "Toyota Innova", amount: "₹8,500", date: "Aug 07, 2026", status: "Completed" },
+  ];
+
+  return (
+    <div className="p-6 md:p-10 w-full bg-slate-50 min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Dashboard Overview</h1>
+        <p className="text-slate-500 mt-1">Welcome back. Here is what's happening today.</p>
+      </div>
+
+      {/* Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500 mb-1">Total Earnings</p>
+            <p className="text-2xl font-bold text-slate-800">₹{stats.totalEarnings.toLocaleString()}</p>
+          </div>
+          <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+            <IconCurrencyRupee size={24} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500 mb-1">Active Users</p>
+            <p className="text-2xl font-bold text-slate-800">{stats.totalUsers.toLocaleString()}</p>
+          </div>
+          <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
+            <IconUsers size={24} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500 mb-1">Total Vehicles</p>
+            <p className="text-2xl font-bold text-slate-800">{stats.totalVehicles.toLocaleString()}</p>
+          </div>
+          <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
+            <IconCar size={24} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500 mb-1">Total Bookings</p>
+            <p className="text-2xl font-bold text-slate-800">{stats.totalBookings.toLocaleString()}</p>
+          </div>
+          <div className="p-3 bg-orange-100 text-orange-600 rounded-xl">
+            <IconCalendarEvent size={24} />
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Earnings Line Chart */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Earnings Overview</h2>
+          <div className="h-[300px]">
+            {stats.monthlyEarningsChartData[0].data.length > 0 ? (
+              <ResponsiveLine
+                data={stats.monthlyEarningsChartData}
+                margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
+                xScale={{ type: 'point' }}
+                yScale={{
+                    type: 'linear',
+                    min: 'auto',
+                    max: 'auto',
+                    stacked: false,
+                    reverse: false
+                }}
+                yFormat=" >-.2f"
+                curve="monotoneX"
+                axisTop={null}
+                axisRight={null}
+                axisBottom={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    legend: 'Month',
+                    legendOffset: 36,
+                    legendPosition: 'middle'
+                }}
+                axisLeft={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    legend: 'Earnings (₹)',
+                    legendOffset: -50,
+                    legendPosition: 'middle'
+                }}
+                enableGridX={false}
+                colors={["#10b981"]}
+                pointSize={8}
+                pointColor={"#ffffff"}
+                pointBorderWidth={2}
+                pointBorderColor={{ from: 'serieColor' }}
+                enableArea={true}
+                areaOpacity={0.15}
+                useMesh={true}
+                defs={[
+                  {
+                    id: 'gradientA',
+                    type: 'linearGradient',
+                    colors: [
+                        { offset: 0, color: '#10b981' },
+                        { offset: 100, color: '#10b981', opacity: 0 }
+                    ],
+                  },
+                ]}
+                fill={[{ match: '*', id: 'gradientA' }]}
+                theme={{
+                  axis: { ticks: { text: { fill: '#64748b' } } },
+                  grid: { line: { stroke: '#f1f5f9', strokeWidth: 1 } },
+                  tooltip: { container: { background: '#1e293b', color: '#fff', fontSize: '12px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' } }
+                }}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center text-slate-400">No earnings data available for the last 6 months.</div>
+            )}
+          </div>
+        </div>
+
+        {/* Bookings Status Pie Chart */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Analytics Overview</h2>
+          <div className="h-[300px]">
+            {stats.bookingStatusChartData.length > 0 ? (
+              <ResponsivePie
+                data={stats.bookingStatusChartData}
+                margin={{ top: 20, right: 20, bottom: 40, left: 20 }}
+                innerRadius={0.7}
+                padAngle={2}
+                cornerRadius={6}
+                activeOuterRadiusOffset={8}
+                colors={{ scheme: 'set2' }}
+                borderWidth={1}
+                borderColor={{
+                    from: 'color',
+                    modifiers: [ [ 'darker', 0.2 ] ]
+                }}
+                enableArcLinkLabels={true}
+                arcLinkLabelsSkipAngle={10}
+                arcLinkLabelsTextColor="#64748b"
+                arcLinkLabelsThickness={2}
+                arcLinkLabelsColor={{ from: 'color' }}
+                arcLabelsSkipAngle={10}
+                arcLabelsTextColor="#ffffff"
+                theme={{
+                  tooltip: { container: { background: '#1e293b', color: '#fff', fontSize: '12px', borderRadius: '8px' } }
+                }}
+              />
+            ) : (
+               <div className="h-full flex items-center justify-center text-slate-400">No analytics data available.</div>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Second Row: Bar Chart & Table */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        
+        {/* Vehicle Performance Bar Chart */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Vehicle Performance</h2>
+          <div className="h-[300px]">
+            <ResponsiveBar
+              data={mockBarData}
+              keys={["bookings"]}
+              indexBy="type"
+              margin={{ top: 20, right: 20, bottom: 40, left: 40 }}
+              padding={0.4}
+              valueScale={{ type: "linear" }}
+              colors={{ scheme: "accent" }}
+              borderRadius={4}
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+              }}
+              enableGridY={true}
+              labelSkipWidth={12}
+              labelSkipHeight={12}
+              labelTextColor="#ffffff"
+              theme={{
+                axis: { ticks: { text: { fill: "#64748b" } } },
+                grid: { line: { stroke: "#f1f5f9", strokeWidth: 1 } },
+                tooltip: { container: { background: "#1e293b", color: "#fff", fontSize: "12px", borderRadius: "8px" } }
+              }}
             />
           </div>
         </div>
 
-        <div className="flex m-3 flex-wrap  justify-center xl:justify-start  gap-1 items-center ">
-          {earningData.map((item) => (
-            <div
-              key={item.title}
-              className="bg-slate-50 dark:text-gray-200 dark:bg-secondary-dark-bg md:w-56 p-4 pt9 rounded-2xl 2xl:h-44"
-            >
-              <button
-                type="button"
-                style={{ color: item.iconColor, backgroundColor: item.iconBg }}
-                className="text-2xl opacity-0.9 "
-              >
-                {item.icon}
-              </button>
-              <p className="mt-3">
-                <span className="text-lg font-semibold text-black">
-                  {item.amount}
-                </span>
-                <span className={`text-sm text-${item.pcColor} ml-2`}>
-                  {item.percentage}
-                </span>
-              </p>
-              <p className="text-sm text-gray-400 mt-1">{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* graphs */}
-
-      <div className="flex gap-10 m-4 flex-wrap justify-center">
-        <div className="bg-white dark:text-gray-200 dark:bg-secondary-dark-bg p-6 rounded-2xl">
-          <div className="flex justify-between items-center gap-2">
-            <p className="text-xl font-semibold">Recent Transactions</p>
-            {/* <DropDown currentMode={currentMode} /> */}
-          </div>
-          <div className="mt-10 w-72 md:w-400">
-           
-          </div>
-          <div className="flex justify-between items-center mt-5 border-t-1 border-color">
-            <div className="mt-3">
-              <Button
-                color="white"
-                // bgColor={currentColor}
-                text="Add"
-                borderRadius="10px"
-              />
-            </div>
-
-            <p className="text-gray-400 text-sm">36 Recent Transactions</p>
-          </div>
-        </div>
-        <div className="bg-white dark:text-gray-200 dark:bg-secondary-dark-bg p-6 rounded-2xl w-96 md:w-760">
-          <div className="flex justify-between items-center gap-2 mb-10">
-            <p className="text-xl font-semibold">Sales Overview</p>
-            {/* <DropDown currentMode={currentMode} /> */}
-          </div>
-          <div className="md:w-full overflow-auto">
-            <LineChart />
+        {/* Recent Transactions Table */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 overflow-hidden flex flex-col">
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Recent Transactions</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="text-xs uppercase bg-slate-50 text-slate-500 font-semibold rounded-lg">
+                <tr>
+                  <th className="px-4 py-3 rounded-l-lg">ID</th>
+                  <th className="px-4 py-3">User</th>
+                  <th className="px-4 py-3">Vehicle</th>
+                  <th className="px-4 py-3">Amount</th>
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3 rounded-r-lg">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mockTransactions.map((tx, idx) => (
+                  <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    <td className="px-4 py-4 font-medium text-slate-800">{tx.id}</td>
+                    <td className="px-4 py-4">{tx.user}</td>
+                    <td className="px-4 py-4">{tx.vehicle}</td>
+                    <td className="px-4 py-4 font-semibold text-slate-700">{tx.amount}</td>
+                    <td className="px-4 py-4 text-slate-500">{tx.date}</td>
+                    <td className="px-4 py-4">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        tx.status === "Completed" ? "bg-emerald-100 text-emerald-700" :
+                        tx.status === "Pending" ? "bg-orange-100 text-orange-700" :
+                        "bg-red-100 text-red-700"
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+
     </div>
   );
 };

@@ -22,6 +22,12 @@ const bookingSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// Add indexes for optimizing lookup performance
+bookingSchema.index({ vehicleId: 1 });
+bookingSchema.index({ userId: 1 });
+bookingSchema.index({ pickupDate: 1, dropOffDate: 1 });
+bookingSchema.index({ status: 1 });
+
 const Booking = mongoose.model("Booking", bookingSchema);
 
 export default Booking;

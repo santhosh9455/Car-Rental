@@ -20,6 +20,7 @@ const Navbar = () => {
   const { chat, notification, userProfile, screenSize } = useSelector(
     (state) => state.adminDashboardSlice
   );
+  const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
     const handleResize = () => dispatch(setScreenSize(window.innerWidth));
@@ -65,48 +66,50 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex justify-between max-w-[100%] p-2 text-white relative border-b shadow-lg shadow-slate-200 bg-blue-700">
+    <div className="flex justify-between max-w-[100%] p-2 relative border-b shadow-sm shadow-slate-100 bg-white">
       <div className="flex ">
         <NavButton
           title="Menu"
           customFunc={() => dispatch(toggleSidebar())}
-          color={"blue"}
+          color={"#0f172a"}
           icon={<AiOutlineMenu />}
         />
       </div>
 
-      <div className="flex justify-between text-white">
-
+      <div className="flex justify-between text-slate-800">
 
         <NavButton
           title="Chat"
           customFunc={() => dispatch(openPages("chat"))}
-          color={"white"}
-          dotColor={"cyan"}
+          color={"#0f172a"}
+          dotColor={"#0ea5e9"}
           icon={<BsChatLeft />}
         />
 
         <NavButton
           title="Notification"
           customFunc={() => dispatch(openPages("notification"))}
-          color={"white"}
-          hover={"bule"}
-          dotColor={"gold"}
+          color={"#0f172a"}
+          dotColor={"#f59e0b"}
           icon={<RiNotification3Line />}
         />
         <TooltipComponent content="profile" position="BottomCenter">
           <div
-            className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded-lg mt-2"
+            className="flex items-center gap-2 cursor-pointer p-1.5 hover:bg-slate-50 rounded-lg mt-1"
             onClick={() => dispatch(openPages("userProfile"))}
           >
-            <img src={profiile} alt="" className="w-4 h-4 rounded-full " />
-            <p>
-              <span className="text-[12px] text-white">Hi,</span>{" "}
-              <span className="text-white font-semi-bold  text-[12px]">
-                Ashwini K
+            <img 
+              src={currentUser?.profilePicture || profiile} 
+              alt="Profile" 
+              className="w-8 h-8 rounded-full object-cover border border-slate-200" 
+            />
+            <p className="hidden md:block">
+              <span className="text-[14px] text-slate-500">Hi,</span>{" "}
+              <span className="text-slate-800 font-semibold text-[14px] ml-1">
+                {currentUser?.username || "Admin"}
               </span>
             </p>
-            <MdKeyboardArrowDown />
+            <MdKeyboardArrowDown className="text-slate-500" size={20} />
           </div>
         </TooltipComponent>
 

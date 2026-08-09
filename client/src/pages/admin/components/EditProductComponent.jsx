@@ -15,7 +15,7 @@ import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { setadminEditVehicleSuccess } from "../../../redux/adminSlices/adminDashboardSlice/StatusSlice";
 
-export default function EditProductComponent() {
+export default function EditProductComponent({ vehicleIdProp, onClose }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -27,7 +27,7 @@ export default function EditProductComponent() {
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const vehicle_id = queryParams.get("vehicle_id");
+  const vehicle_id = vehicleIdProp || queryParams.get("vehicle_id");
 
   let updateingItem = "";
   userAllVehicles.forEach((cur) => {
@@ -77,34 +77,47 @@ export default function EditProductComponent() {
     } catch (error) {
       console.log(error);
     }
-    navigate("/adminDashboard/allProduct");
+    if (onClose) onClose();
+    else navigate("/adminDashboard/allProduct");
   };
 
   const handleClose = () => {
-    navigate("/adminDashboard/allProduct");
     dispatch(setEditData(null));
+    if (onClose) onClose();
+    else navigate("/adminDashboard/allProduct");
   };
 
   return (
-    <div>
-      <button onClick={handleClose} className="relative left-10 top-5">
-        <div className="padding-5 padding-2 rounded-full bg-slate-100 drop-shadow-md hover:shadow-lg hover:bg-blue-200 hover:translate-y-1 hover:translate-x-1 ">
-          <IoMdClose style={{ fontSize: "30" }} />
+    <div className="relative bg-white rounded-2xl w-full">
+      <button onClick={handleClose} className="absolute right-4 top-4 z-50">
+        <div className="p-2 rounded-full bg-slate-100 drop-shadow-sm hover:shadow-md hover:bg-slate-200 transition-all text-slate-500">
+          <IoMdClose size={24} />
         </div>
       </button>
-      <form onSubmit={handleSubmit(onEditSubmit)}>
-        <div className="bg-white -z-10 max-w-[1000px] mx-auto">
+      <form onSubmit={handleSubmit(onEditSubmit)} className="relative mt-8">
+        <div className="bg-white max-w-[1000px] mx-auto p-6 md:p-10 rounded-2xl shadow-xl border border-slate-100">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-800">Edit Vehicle</h2>
+            <p className="text-sm text-slate-500 mt-1">Update the details of the selected vehicle.</p>
+          </div>
           <Box
             sx={{
               "& .MuiTextField-root": {
-                m: 4,
-                width: "25ch",
-                color: "black", // Set text color to black
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "black", // Set outline color to black
+                m: 2,
+                width: "calc(33% - 32px)", // 3 columns
+                minWidth: "250px",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "& fieldset": { borderColor: "#e2e8f0" },
+                  "&:hover fieldset": { borderColor: "#cbd5e1" },
                 },
-                "@media (max-width: 640px)": {
-                  width: "30ch",
+                "@media (max-width: 768px)": {
+                  width: "calc(50% - 32px)",
+                },
+                "@media (max-width: 480px)": {
+                  width: "100%",
+                  m: 1,
+                  mb: 2,
                 },
               },
             }}

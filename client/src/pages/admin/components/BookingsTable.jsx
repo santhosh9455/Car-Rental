@@ -1,11 +1,43 @@
 import { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import Box from "@mui/material/Box";
+import { IconEye, IconX, IconTrash, IconEdit } from "@tabler/icons-react";
+import { Modal } from "@mui/material";
+import Swal from "sweetalert2";
+import api from "../../../utils/api";
 
 const BookingsTable = () => {
   const [bookings, setBookings] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editBookingForm, setEditBookingForm] = useState({
+    pickupDate: "",
+    dropOffDate: "",
+    status: ""
+  });
 
+  const handleOpenModal = (bookingData) => {
+    setSelectedBooking(bookingData);
+    setIsModalOpen(true);
+  };
 
+  const handleOpenEditModal = (bookingData) => {
+    setSelectedBooking(bookingData);
+    setEditBookingForm({
+      pickupDate: new Date(bookingData.pickupDate).toISOString().slice(0, 16),
+      dropOffDate: new Date(bookingData.dropOffDate).toISOString().slice(0, 16),
+      status: bookingData.status
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setIsEditModalOpen(false);
+    setSelectedBooking(null);
+  };
   const fetchBookings = async () => {
     try {
       const res = await fetch("/api/admin/allBookings", {
@@ -21,6 +53,20 @@ const BookingsTable = () => {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.put(`/api/admin/bookings/${selectedBooking._id}`, editBookingForm);
+      if (res.status === 200) {
+        Swal.fire("Updated!", "The booking has been updated.", "success");
+        setIsEditModalOpen(false);
+        fetchBookings();
+      }
+    } catch (error) {
+      Swal.fire("Error", "Could not update booking", "error");
     }
   };
 
@@ -52,6 +98,25 @@ const BookingsTable = () => {
     };
 
     changeVehicleStatus();
+  };
+
+  const handleDeleteBooking = async (id) => {
+    const confirm = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (confirm.isConfirmed) {
+      try {
+        await api.delete(`/api/admin/bookings/${id}`);
+        Swal.fire("Deleted!", "The booking has been deleted.", "success");
+        fetchBookings();
+      } catch (error) {
+        Swal.fire("Error", "Could not delete booking", "error");
+      }
+    }
   };
 
   //all bookings
@@ -122,6 +187,35 @@ const BookingsTable = () => {
         )
       }
     },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 150,
+      renderCell: (params) => {
+        return (
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              className="text-slate-500 hover:text-slate-800 p-2 rounded-full hover:bg-slate-50 transition-colors"
+              onClick={() => handleOpenModal(params.row.originalData)}
+            >
+              <IconEye size={20} />
+            </button>
+            <button
+              className="text-blue-500 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50 transition-colors"
+              onClick={() => handleOpenEditModal(params.row.originalData)}
+            >
+              <IconEdit size={20} />
+            </button>
+            <button
+              className="text-red-500 hover:text-red-800 p-2 rounded-full hover:bg-red-50 transition-colors"
+              onClick={() => handleDeleteBooking(params.row.id)}
+            >
+              <IconTrash size={20} />
+            </button>
+          </div>
+        );
+      },
+    },
   ];
 
 
@@ -145,36 +239,141 @@ const BookingsTable = () => {
         "overDue",
         "tripCompleted",
       ],
+      originalData: cur,
     }));
 
   return (
     <>
-      <div className="max-w-[1000px]  d-flex   justify-end text-start items-end p-10 border border-slate-1 rounded-lg drop-shadow-md ">
-        <Box sx={{ height: "100%", width: "100%" }}>
+      <div className="w-full flex justify-end text-start items-end p-4 md:p-10 border border-slate-100 rounded-2xl shadow-sm bg-white overflow-hidden">
+        <Box sx={{ height: "70vh", width: "100%", overflowX: "auto" }}>
           <DataGrid
-            rows={rows}
-            columns={columns}
+            rows={rows || []}
+            columns={columns.map((c) => ({ ...c, flex: 1, minWidth: c.width }))}
             initialState={{
               pagination: {
                 paginationModel: {
-                  pageSize: 8,
+                  pageSize: 10,
                 },
               },
             }}
-            pageSizeOptions={[5]}
+            pageSizeOptions={[5, 10, 20]}
             disableRowSelectionOnClick
             sx={{
+              border: "none",
+              ".MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f8fafc",
+                color: "#334155",
+                fontWeight: 600,
+              },
               ".MuiDataGrid-columnSeparator": {
                 display: "none",
               },
-              "&.MuiDataGrid-root": {
-                border: ".1px solid #ebdddd",
-                padding: "1px",
+              ".MuiDataGrid-row:hover": {
+                backgroundColor: "#f1f5f9",
+              },
+              ".MuiDataGrid-cell": {
+                borderBottom: "1px solid #f1f5f9",
+                display: "flex",
+                alignItems: "center",
               },
             }}
           />
         </Box>
       </div>
+
+      <Modal open={isModalOpen} onClose={handleCloseModal}>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-[600px] max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 outline-none">
+          {selectedBooking && (
+            <div>
+              <div className="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 className="text-xl font-bold text-slate-800">Booking Details</h2>
+                <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full">
+                  <IconX size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Order Info</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-slate-700 bg-slate-50 p-4 rounded-xl">
+                    <div><span className="font-medium text-slate-400 block mb-1">Booking ID</span> {selectedBooking._id}</div>
+                    <div><span className="font-medium text-slate-400 block mb-1">Total Amount</span> ₹{selectedBooking.totalPrice}</div>
+                    <div><span className="font-medium text-slate-400 block mb-1">Pickup</span> {selectedBooking.pickUpLocation} <br/><span className="text-xs text-slate-500">{new Date(selectedBooking.pickupDate).toLocaleString()}</span></div>
+                    <div><span className="font-medium text-slate-400 block mb-1">Dropoff</span> {selectedBooking.dropOffLocation} <br/><span className="text-xs text-slate-500">{new Date(selectedBooking.dropOffDate).toLocaleString()}</span></div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Vehicle Details</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-slate-700 border border-slate-100 p-4 rounded-xl">
+                    <div><span className="font-medium text-slate-400 block mb-1">Vehicle</span> {selectedBooking.vehicleDetails?.company} {selectedBooking.vehicleDetails?.model}</div>
+                    <div><span className="font-medium text-slate-400 block mb-1">Reg. Number</span> {selectedBooking.vehicleDetails?.registeration_number}</div>
+                    <div><span className="font-medium text-slate-400 block mb-1">Type</span> {selectedBooking.vehicleDetails?.car_type}</div>
+                    <div><span className="font-medium text-slate-400 block mb-1">Transmission</span> {selectedBooking.vehicleDetails?.transmition}</div>
+                    <div><span className="font-medium text-slate-400 block mb-1">Fuel</span> {selectedBooking.vehicleDetails?.fuel_type}</div>
+                    <div><span className="font-medium text-slate-400 block mb-1">Seats</span> {selectedBooking.vehicleDetails?.seats}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal open={isEditModalOpen} onClose={handleCloseModal}>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-[500px] bg-white rounded-2xl shadow-2xl p-6 outline-none">
+          <div className="flex justify-between items-center mb-6 border-b pb-4">
+            <h2 className="text-xl font-bold text-slate-800">Edit Booking</h2>
+            <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full">
+              <IconX size={20} />
+            </button>
+          </div>
+          
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Pickup Date & Time</label>
+              <input 
+                type="datetime-local" 
+                required 
+                value={editBookingForm.pickupDate} 
+                onChange={(e) => setEditBookingForm({...editBookingForm, pickupDate: e.target.value})} 
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Drop-off Date & Time</label>
+              <input 
+                type="datetime-local" 
+                required 
+                value={editBookingForm.dropOffDate} 
+                onChange={(e) => setEditBookingForm({...editBookingForm, dropOffDate: e.target.value})} 
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+              <select 
+                value={editBookingForm.status} 
+                onChange={(e) => setEditBookingForm({...editBookingForm, status: e.target.value})} 
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                <option value="notBooked">notBooked</option>
+                <option value="booked">booked</option>
+                <option value="onTrip">onTrip</option>
+                <option value="notPicked">notPicked</option>
+                <option value="canceled">canceled</option>
+                <option value="overDue">overDue</option>
+                <option value="tripCompleted">tripCompleted</option>
+              </select>
+            </div>
+            <div className="flex justify-end pt-4 mt-6 border-t">
+              <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg mr-2">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </Modal>
     </>
   );
 };

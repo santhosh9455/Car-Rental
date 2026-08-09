@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { MdCurrencyRupee } from "react-icons/md";
 import { CiCalendarDate } from "react-icons/ci";
 import { CiLocationOn } from "react-icons/ci";
+import api from "../../utils/api";
 import UserOrderDetailsModal from "../../components/UserOrderDetailsModal";
 import { setIsOrderModalOpen, setSingleOrderDetails } from "../../redux/user/userSlice";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,13 +33,8 @@ export default function Orders() {
 
   const fetchBookings = async () => {
     try {
-      const res = await fetch("/api/user/findBookingsOfUser", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ userId: _id }),
-      });
-      const data = await res.json();
+        const res = await api.post("/api/user/findBookingsOfUser", { userId: _id });
+      const data = res.data;
       if (Array.isArray(data)) setBookings(data);
     } catch (error) {
       console.log(error);

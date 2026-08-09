@@ -55,3 +55,35 @@ export const changeStatus = async (req, res, next) => {
     next(errorHandler(500, "error in changeStatus"));
   }
 };
+
+export const updateBooking = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const updatedBooking = await Booking.findByIdAndUpdate(id, req.body, { new: true });
+    
+    if (!updatedBooking) {
+      return next(errorHandler(404, "Booking not found"));
+    }
+    
+    res.status(200).json(updatedBooking);
+  } catch (error) {
+    console.log(error);
+    next(errorHandler(500, "error updating booking"));
+  }
+};
+
+export const deleteBooking = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Booking.findByIdAndDelete(id);
+    
+    if (!deleted) {
+      return next(errorHandler(404, "Booking not found"));
+    }
+    
+    res.status(200).json({ message: "Booking deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    next(errorHandler(500, "error deleting booking"));
+  }
+};
