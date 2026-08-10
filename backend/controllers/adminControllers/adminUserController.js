@@ -131,16 +131,23 @@ export const createUser = async (req, res, next) => {
       }
     }
 
-    const newUser = new User({
+    const userPayload = {
       username,
       email,
-      phoneNumber,
       password: hashedPassword,
       isVendor: isVendor === 'true' || isVendor === true,
       isUser: isUser === 'true' || isUser === true,
       isAdmin: isAdmin === 'true' || isAdmin === true,
-      ...(profilePicture && { profilePicture })
-    });
+    };
+
+    if (phoneNumber && phoneNumber.trim() !== "") {
+      userPayload.phoneNumber = phoneNumber;
+    }
+    if (profilePicture) {
+      userPayload.profilePicture = profilePicture;
+    }
+
+    const newUser = new User(userPayload);
 
     await newUser.save();
     

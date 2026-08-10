@@ -66,7 +66,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex justify-between max-w-[100%] p-2 relative border-b shadow-sm shadow-slate-100 bg-white">
+    <div className="flex justify-between max-w-[100%] p-2 relative border-b shadow-sm shadow-slate-100 bg-emerald-900">
       <div className="flex ">
         <NavButton
           title="Menu"
@@ -76,7 +76,7 @@ const Navbar = () => {
         />
       </div>
 
-      <div className="flex justify-between text-slate-800">
+      <div className="flex justify-between text-slate-100">
 
         <NavButton
           title="Chat"
@@ -95,16 +95,16 @@ const Navbar = () => {
         />
         <TooltipComponent content="profile" position="BottomCenter">
           <div
-            className="flex items-center gap-2 cursor-pointer p-1.5 hover:bg-slate-50 rounded-lg mt-1"
+            className="flex items-center gap-2 cursor-pointer p-1.5 bg-slate-50 rounded-lg mt-1"
             onClick={() => dispatch(openPages("userProfile"))}
           >
             <img 
               src={currentUser?.profilePicture || profiile} 
               alt="Profile" 
-              className="w-8 h-8 rounded-full object-cover border border-slate-200" 
+              className="w-8 h-8 rounded-full object-cover borde border-slate-200" 
             />
             <p className="hidden md:block">
-              <span className="text-[14px] text-slate-500">Hi,</span>{" "}
+              <span className="text-[14px] text-slate-800">Hi,</span>{" "}
               <span className="text-slate-800 font-semibold text-[14px] ml-1">
                 {currentUser?.username || "Admin"}
               </span>

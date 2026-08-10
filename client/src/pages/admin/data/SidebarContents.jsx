@@ -25,10 +25,6 @@ export const links = [
           icon: <FiShoppingBag />,
         },
         {
-          name: 'vendorVehicleRequests',
-          icon: <FiShoppingBag />,
-        },
-        {
           name: 'allUsers',
           icon: <IoMdContacts />,
         },
@@ -40,10 +36,6 @@ export const links = [
         {
           name: 'payments',
           icon: <AiOutlineShoppingCart />,
-        },
-        {
-          name: 'employees',
-          icon: <IoMdContacts />,
         },
         {
           name: 'customers',

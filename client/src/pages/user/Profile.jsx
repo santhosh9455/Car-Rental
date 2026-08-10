@@ -10,8 +10,7 @@ import { IconMenu2, IconArrowLeft, IconUser, IconShoppingBag, IconHeart, IconX, 
 
 const navLinks = [
   { to: "/profile/profiles", label: "My Profile", icon: <IconUser size={18} /> },
-  { to: "/profile/orders", label: "My Orders", icon: <IconShoppingBag size={18} /> },
-  { to: "/profile/favorites", label: "Favorites", icon: <IconHeart size={18} /> },
+  { to: "/profile/orders", label: "My Orders", icon: <IconShoppingBag size={18} /> }
 ];
 
 function Profile() {

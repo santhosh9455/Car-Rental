@@ -17,6 +17,20 @@ const BookingsTable = () => {
     dropOffDate: "",
     status: ""
   });
+  
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addBookingForm, setAddBookingForm] = useState({
+    userId: "",
+    vehicleId: "",
+    pickupDate: "",
+    dropOffDate: "",
+    pickUpLocation: "",
+    dropOffLocation: "",
+    totalPrice: "",
+    status: "booked"
+  });
+  const [usersData, setUsersData] = useState([]);
+  const [vehiclesData, setVehiclesData] = useState([]);
 
   const handleOpenModal = (bookingData) => {
     setSelectedBooking(bookingData);
@@ -36,6 +50,7 @@ const BookingsTable = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setIsEditModalOpen(false);
+    setIsAddModalOpen(false);
     setSelectedBooking(null);
   };
   const fetchBookings = async () => {
@@ -67,6 +82,42 @@ const BookingsTable = () => {
       }
     } catch (error) {
       Swal.fire("Error", "Could not update booking", "error");
+    }
+  };
+
+  const fetchUsersAndVehicles = async () => {
+    try {
+      const userRes = await api.get("/api/admin/users?limit=1000");
+      setUsersData(userRes.data.users || []);
+      const vehicleRes = await fetch("/api/admin/showVehicles");
+      const vehicleData = await vehicleRes.json();
+      setVehiclesData(vehicleData || []);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(addBookingForm),
+      });
+      if (res.ok) {
+        Swal.fire("Added!", "Booking has been created.", "success");
+        setIsAddModalOpen(false);
+        fetchBookings();
+        setAddBookingForm({
+          userId: "", vehicleId: "", pickupDate: "", dropOffDate: "",
+          pickUpLocation: "", dropOffLocation: "", totalPrice: "", status: "booked"
+        });
+      } else {
+        Swal.fire("Error", "Could not create booking", "error");
+      }
+    } catch (error) {
+      Swal.fire("Error", "Could not create booking", "error");
     }
   };
 
@@ -122,6 +173,7 @@ const BookingsTable = () => {
   //all bookings
   useEffect(() => {
     fetchBookings();
+    fetchUsersAndVehicles();
   }, []);
 
   //columns
@@ -244,6 +296,15 @@ const BookingsTable = () => {
 
   return (
     <>
+      <div className="w-full flex justify-between text-start items-center mb-4 mt-2 px-4 md:px-10">
+        <h3 className="text-xl font-bold text-slate-800"></h3>
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+        >
+          + Add Booking
+        </button>
+      </div>
       <div className="w-full flex justify-end text-start items-end p-4 md:p-10 border border-slate-100 rounded-2xl shadow-sm bg-white overflow-hidden">
         <Box sx={{ height: "70vh", width: "100%", overflowX: "auto" }}>
           <DataGrid
@@ -370,6 +431,83 @@ const BookingsTable = () => {
             <div className="flex justify-end pt-4 mt-6 border-t">
               <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg mr-2">Cancel</button>
               <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+
+      {/* Add Modal */}
+      <Modal open={isAddModalOpen} onClose={handleCloseModal}>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-[600px] max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 outline-none">
+          <div className="flex justify-between items-center mb-6 border-b pb-4">
+            <h2 className="text-xl font-bold text-slate-800">Add New Booking</h2>
+            <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full">
+              <IconX size={20} />
+            </button>
+          </div>
+          
+          <form onSubmit={handleAddSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">User</label>
+                <select required value={addBookingForm.userId} onChange={(e) => setAddBookingForm({...addBookingForm, userId: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                  <option value="">Select a user...</option>
+                  {usersData.map((u) => <option key={u._id} value={u._id}>{u.username} ({u.email})</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Vehicle</label>
+                <select required value={addBookingForm.vehicleId} onChange={(e) => setAddBookingForm({...addBookingForm, vehicleId: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                  <option value="">Select a vehicle...</option>
+                  {vehiclesData.map((v) => <option key={v._id} value={v._id}>{v.company} {v.model} ({v.registeration_number})</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Pickup Date & Time</label>
+                <input type="datetime-local" required value={addBookingForm.pickupDate} onChange={(e) => setAddBookingForm({...addBookingForm, pickupDate: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Drop-off Date & Time</label>
+                <input type="datetime-local" required value={addBookingForm.dropOffDate} onChange={(e) => setAddBookingForm({...addBookingForm, dropOffDate: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Pickup Location</label>
+                <input type="text" required value={addBookingForm.pickUpLocation} onChange={(e) => setAddBookingForm({...addBookingForm, pickUpLocation: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Drop-off Location</label>
+                <input type="text" required value={addBookingForm.dropOffLocation} onChange={(e) => setAddBookingForm({...addBookingForm, dropOffLocation: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Total Price (₹)</label>
+                <input type="number" required value={addBookingForm.totalPrice} onChange={(e) => setAddBookingForm({...addBookingForm, totalPrice: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                <select value={addBookingForm.status} onChange={(e) => setAddBookingForm({...addBookingForm, status: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                  <option value="booked">booked</option>
+                  <option value="notBooked">notBooked</option>
+                  <option value="onTrip">onTrip</option>
+                  <option value="notPicked">notPicked</option>
+                  <option value="canceled">canceled</option>
+                  <option value="overDue">overDue</option>
+                  <option value="tripCompleted">tripCompleted</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 mt-6 border-t">
+              <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg mr-2">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create Booking</button>
             </div>
           </form>
         </div>

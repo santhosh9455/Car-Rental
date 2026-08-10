@@ -14,12 +14,6 @@ export const links = [
         name: "orders",
         icon: <CiHeart />
       },
-      {
-        name: "favorites",
-        icon: <FiShoppingBag />,
-      },
-
-     
     ],
   },
 ];

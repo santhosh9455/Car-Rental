@@ -8,7 +8,7 @@ import { multerUploads } from "../utils/multer.js"
 import { insertDummyData } from "../controllers/adminControllers/masterCollectionController.js"
 import { getCarModelData } from "../controllers/adminControllers/masterCollectionController.js"
 import { approveVendorVehicleRequest, fetchVendorVehilceRequests, rejectVendorVehicleRequest } from "../controllers/adminControllers/vendorVehilceRequests.js"
-import { allBookings, changeStatus, updateBooking, deleteBooking } from "../controllers/adminControllers/bookingsController.js"
+import { allBookings, changeStatus, updateBooking, deleteBooking, createBooking } from "../controllers/adminControllers/bookingsController.js"
 import { getSettings, updateSettings } from "../controllers/adminControllers/settingsController.js"
 import { getPayments, updatePaymentStatus, reconcilePayment, createPayment, updatePayment, deletePayment } from "../controllers/adminControllers/paymentController.js"
 import { verifyToken } from "../utils/verifyUser.js"
@@ -34,6 +34,7 @@ router.get('/fetchVendorVehilceRequests',fetchVendorVehilceRequests)
 router.post('/approveVendorVehicleRequest',approveVendorVehicleRequest)
 router.post('/rejectVendorVehicleRequest',rejectVendorVehicleRequest)
 router.get('/allBookings',allBookings)
+router.post('/bookings', createBooking)
 router.post('/changeStatus',changeStatus)
 router.put('/bookings/:id', updateBooking)
 router.delete('/bookings/:id', deleteBooking)

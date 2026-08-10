@@ -87,3 +87,32 @@ export const deleteBooking = async (req, res, next) => {
     next(errorHandler(500, "error deleting booking"));
   }
 };
+
+export const createBooking = async (req, res, next) => {
+  try {
+    const { vehicleId, userId, pickupDate, dropOffDate, pickUpLocation, dropOffLocation, totalPrice, status } = req.body;
+    
+    if (!vehicleId || !userId || !pickupDate || !dropOffDate || !pickUpLocation || !dropOffLocation || !totalPrice) {
+      return next(errorHandler(400, "All fields are required"));
+    }
+
+    const newBooking = new Booking({
+      vehicleId,
+      userId,
+      pickupDate,
+      dropOffDate,
+      pickUpLocation,
+      dropOffLocation,
+      totalPrice,
+      status: status || "booked",
+      razorpayOrderId: "admin_manual_order_" + Date.now(),
+      razorpayPaymentId: "admin_manual_payment_" + Date.now()
+    });
+
+    const savedBooking = await newBooking.save();
+    res.status(201).json(savedBooking);
+  } catch (error) {
+    console.log(error);
+    next(errorHandler(500, "error creating booking"));
+  }
+};
