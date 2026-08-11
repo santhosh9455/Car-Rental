@@ -257,9 +257,9 @@ function AllVehicles() {
             // Refresh data after adding
             const fetchVehicles = async () => {
               try {
-                const res = await fetch("/api/admin/getAllVehicle", { method: "GET" });
+                const res = await fetch("/api/admin/showVehicles", { method: "GET" });
                 const data = await res.json();
-                if (data) dispatch(getAllVehicles(data));
+                if (data) dispatch(showVehicles(data));
               } catch (error) { console.log(error); }
             };
             fetchVehicles();
@@ -278,9 +278,9 @@ function AllVehicles() {
                 // Refresh data after editing
                 const fetchVehicles = async () => {
                   try {
-                    const res = await fetch("/api/admin/getAllVehicle", { method: "GET" });
+                    const res = await fetch("/api/admin/showVehicles", { method: "GET" });
                     const data = await res.json();
-                    if (data) dispatch(getAllVehicles(data));
+                    if (data) dispatch(showVehicles(data));
                   } catch (error) { console.log(error); }
                 };
                 fetchVehicles();

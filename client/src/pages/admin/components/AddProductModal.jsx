@@ -112,9 +112,9 @@ const AddProductModal = ({ onClose }) => {
       formData.append("fuel_type", addData.fuelType);
       formData.append("seat", addData.Seats);
       formData.append("transmition_type", addData.transmitionType);
-      formData.append("insurance_end_date", addData.insurance_end_date.$d);
-      formData.append("registeration_end_date", addData.Registeration_end_date.$d);
-      formData.append("polution_end_date", addData.polution_end_date.$d);
+      formData.append("insurance_end_date", addData.insurance_end_date ? addData.insurance_end_date.$d : new Date());
+      formData.append("registeration_end_date", addData.Registeration_end_date ? addData.Registeration_end_date.$d : new Date());
+      formData.append("polution_end_date", addData.polution_end_date ? addData.polution_end_date.$d : new Date());
       formData.append("car_type", addData.carType);
       formData.append("location", addData.vehicleLocation);
       formData.append("district", addData.vehicleDistrict
