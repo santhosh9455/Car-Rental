@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import {
   loadingEnd,
@@ -11,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { IconCar, IconMail, IconLock, IconArrowRight } from "@tabler/icons-react";
+import { IconCar, IconMail, IconLock, IconArrowRight, IconEye, IconEyeOff } from "@tabler/icons-react";
 import Header from "../../components/Header";
 
 const schema = z.object({
@@ -23,6 +24,7 @@ const schema = z.object({
 });
 
 function SignIn() {
+  const [showPassword, setShowPassword] = React.useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
   const { isLoading, isError } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -119,11 +121,18 @@ function SignIn() {
                     <IconLock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       id="password"
-                      type="password"
-                      className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-sm"
+                      type={showPassword ? "text" : "password"}
+                      className="w-full pl-10 pr-12 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-sm"
                       placeholder="••••••••"
                       {...register("password")}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                    </button>
                   </div>
                   {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
                 </div>

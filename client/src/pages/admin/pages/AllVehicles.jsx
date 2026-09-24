@@ -187,7 +187,7 @@ function AllVehicles() {
           </button>
         </div>
         <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <Box sx={{ height: "70vh", width: "100%", overflowX: "auto" }}>
+        <Box sx={{ height: "70vh", width: "100%", overflowX: "auto", overflowY: "auto" }}>
           <DataGrid
             rows={rows}
             columns={columns}

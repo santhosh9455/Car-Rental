@@ -22,6 +22,7 @@ export const links = [
         },
         {
           name: 'allProduct',
+          title: 'Vehicles',
           icon: <FiShoppingBag />,
         },
         {
@@ -36,10 +37,6 @@ export const links = [
         {
           name: 'payments',
           icon: <AiOutlineShoppingCart />,
-        },
-        {
-          name: 'customers',
-          icon: <RiContactsLine />,
         },
         {
           name: 'settings',

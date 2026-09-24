@@ -305,7 +305,7 @@ const BookingsTable = () => {
           + Add Booking
         </button>
       </div>
-      <div className="w-full flex justify-end text-start items-end p-4 md:p-10 border border-slate-100 rounded-2xl shadow-sm bg-white overflow-hidden">
+      <div className="w-full p-4 md:p-10 border border-slate-100 rounded-2xl shadow-sm bg-white overflow-hidden">
         <Box sx={{ height: "70vh", width: "100%", overflowX: "auto" }}>
           <DataGrid
             rows={rows || []}
