@@ -46,7 +46,7 @@ const Navbar = () => {
         type="button"
         onClick={customFunc}
         style={{ color, dotColor }}
-        className="relative text-xl p-3  hover:bg-gray-100  rounded-full mb-2"
+        className="relative text-xl p-3  hover:bg-white/20  rounded-full mb-2"
       >
         <span
           style={{ background: dotColor }}
@@ -71,7 +71,7 @@ const Navbar = () => {
         <NavButton
           title="Menu"
           customFunc={() => dispatch(toggleSidebar())}
-          color={"#0f172a"}
+          color={"#ffffff"}
           icon={<AiOutlineMenu />}
         />
       </div>
@@ -81,7 +81,7 @@ const Navbar = () => {
         <NavButton
           title="Chat"
           customFunc={() => dispatch(openPages("chat"))}
-          color={"#0f172a"}
+          color={"#ffffff"}
           dotColor={"#0ea5e9"}
           icon={<BsChatLeft />}
         />
@@ -89,7 +89,7 @@ const Navbar = () => {
         <NavButton
           title="Notification"
           customFunc={() => dispatch(openPages("notification"))}
-          color={"#0f172a"}
+          color={"#ffffff"}
           dotColor={"#f59e0b"}
           icon={<RiNotification3Line />}
         />
@@ -101,7 +101,8 @@ const Navbar = () => {
             <img 
               src={currentUser?.profilePicture || profiile} 
               alt="Profile" 
-              className="w-8 h-8 rounded-full object-cover borde border-slate-200" 
+              className="w-8 h-8 rounded-full object-cover borde border-slate-200 bg-slate-100" 
+              onError={(e) => { e.target.onerror = null; e.target.src = profiile }}
             />
             <p className="hidden md:block">
               <span className="text-[14px] text-slate-800">Hi,</span>{" "}

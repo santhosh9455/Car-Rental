@@ -33,20 +33,7 @@ const AdminHomeMain = () => {
 
   if (!stats) return <div className="p-10">Error loading dashboard</div>;
 
-  const mockBarData = [
-    { type: "Sedan", bookings: 120 },
-    { type: "SUV", bookings: 85 },
-    { type: "Hatchback", bookings: 150 },
-    { type: "Luxury", bookings: 30 },
-  ];
 
-  const mockTransactions = [
-    { id: "#TX-8742", user: "John Doe", vehicle: "Honda City", amount: "₹4,500", date: "Today, 10:30 AM", status: "Completed" },
-    { id: "#TX-8743", user: "Jane Smith", vehicle: "Hyundai Creta", amount: "₹6,200", date: "Today, 09:15 AM", status: "Pending" },
-    { id: "#TX-8744", user: "Mike Johnson", vehicle: "Maruti Swift", amount: "₹2,800", date: "Yesterday", status: "Completed" },
-    { id: "#TX-8745", user: "Sarah Williams", vehicle: "BMW X5", amount: "₹15,000", date: "Yesterday", status: "Cancelled" },
-    { id: "#TX-8746", user: "David Brown", vehicle: "Toyota Innova", amount: "₹8,500", date: "Aug 07, 2026", status: "Completed" },
-  ];
 
   return (
     <div className="p-6 md:p-10 w-full bg-slate-50 min-h-screen">
@@ -106,19 +93,17 @@ const AdminHomeMain = () => {
           <h2 className="text-lg font-bold text-slate-800 mb-4">Earnings Overview</h2>
           <div className="h-[300px]">
             {stats.monthlyEarningsChartData[0].data.length > 0 ? (
-              <ResponsiveLine
-                data={stats.monthlyEarningsChartData}
+              <ResponsiveBar
+                data={stats.monthlyEarningsChartData[0].data}
+                keys={["y"]}
+                indexBy="x"
                 margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
-                xScale={{ type: 'point' }}
-                yScale={{
-                    type: 'linear',
-                    min: 'auto',
-                    max: 'auto',
-                    stacked: false,
-                    reverse: false
-                }}
-                yFormat=" >-.2f"
-                curve="monotoneX"
+                padding={0.3}
+                valueScale={{ type: 'linear' }}
+                indexScale={{ type: 'band', round: true }}
+                colors={["#3b82f6"]}
+                borderRadius={6}
+                borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
                 axisTop={null}
                 axisRight={null}
                 axisBottom={{
@@ -126,42 +111,29 @@ const AdminHomeMain = () => {
                     tickPadding: 5,
                     tickRotation: 0,
                     legend: 'Month',
-                    legendOffset: 36,
-                    legendPosition: 'middle'
+                    legendPosition: 'middle',
+                    legendOffset: 40
                 }}
                 axisLeft={{
                     tickSize: 5,
                     tickPadding: 5,
                     tickRotation: 0,
                     legend: 'Earnings (₹)',
-                    legendOffset: -50,
-                    legendPosition: 'middle'
+                    legendPosition: 'middle',
+                    legendOffset: -50
                 }}
-                enableGridX={false}
-                colors={["#10b981"]}
-                pointSize={8}
-                pointColor={"#ffffff"}
-                pointBorderWidth={2}
-                pointBorderColor={{ from: 'serieColor' }}
-                enableArea={true}
-                areaOpacity={0.15}
-                useMesh={true}
-                defs={[
-                  {
-                    id: 'gradientA',
-                    type: 'linearGradient',
-                    colors: [
-                        { offset: 0, color: '#10b981' },
-                        { offset: 100, color: '#10b981', opacity: 0 }
-                    ],
-                  },
-                ]}
-                fill={[{ match: '*', id: 'gradientA' }]}
+                enableGridY={true}
+                enableLabel={false}
                 theme={{
                   axis: { ticks: { text: { fill: '#64748b' } } },
-                  grid: { line: { stroke: '#f1f5f9', strokeWidth: 1 } },
-                  tooltip: { container: { background: '#1e293b', color: '#fff', fontSize: '12px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' } }
+                  grid: { line: { stroke: '#e2e8f0', strokeWidth: 1 } },
+                  tooltip: { container: { background: '#1e293b', color: '#fff', fontSize: '12px', borderRadius: '8px' } }
                 }}
+                tooltip={({ id, value, color }) => (
+                  <div className="bg-slate-800 text-white p-2 rounded-lg text-xs shadow-lg">
+                    <strong>Earnings:</strong> ₹{value.toLocaleString()}
+                  </div>
+                )}
               />
             ) : (
               <div className="h-full flex items-center justify-center text-slate-400">No earnings data available for the last 6 months.</div>
@@ -214,7 +186,7 @@ const AdminHomeMain = () => {
           <h2 className="text-lg font-bold text-slate-800 mb-4">Vehicle Performance</h2>
           <div className="h-[300px]">
             <ResponsiveBar
-              data={mockBarData}
+              data={stats.vehiclePerformanceChartData || []}
               keys={["bookings"]}
               indexBy="type"
               margin={{ top: 20, right: 20, bottom: 40, left: 40 }}
@@ -263,7 +235,7 @@ const AdminHomeMain = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockTransactions.map((tx, idx) => (
+                {stats.recentTransactions && stats.recentTransactions.map((tx, idx) => (
                   <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-4 font-medium text-slate-800">{tx.id}</td>
                     <td className="px-4 py-4">{tx.user}</td>

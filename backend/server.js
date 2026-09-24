@@ -17,7 +17,9 @@ const App = express();
 
 App.use(express.json());
 App.use(cookieParser());
-App.use(helmet());
+App.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -74,6 +76,13 @@ App.listen(port, () => {
 
 
 App.use('*', cloudinaryConfig);
+
+import fs from 'fs';
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+App.use('/uploads', express.static(uploadsDir));
 
 // App.get('/*', (req, res) => res.sendFile(resolve(__dirname, '../public/index.html')));
 

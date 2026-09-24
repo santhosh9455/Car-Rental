@@ -145,9 +145,10 @@ const AllUsers = () => {
       width: 80,
       renderCell: (params) => (
         <img
-          src={params.value}
+          src={params.value || "https://media.istockphoto.com/id/1316420668/vector/user-icon-human-person-symbol-social-profile-icon-avatar-login-sign-web-user-symbol.jpg?s=612x612&w=0&k=20&c=AhqW2ssX8EeI2IYFm6-ASQ7rfeBWfrFFV4E87SaFhJE="}
           alt="Avatar"
-          className="w-10 h-10 rounded-full object-cover my-auto"
+          className="w-10 h-10 rounded-full object-cover my-auto bg-slate-100"
+          onError={(e) => { e.target.onerror = null; e.target.src = "https://media.istockphoto.com/id/1316420668/vector/user-icon-human-person-symbol-social-profile-icon-avatar-login-sign-web-user-symbol.jpg?s=612x612&w=0&k=20&c=AhqW2ssX8EeI2IYFm6-ASQ7rfeBWfrFFV4E87SaFhJE=" }}
         />
       ),
     },
@@ -270,7 +271,7 @@ const AllUsers = () => {
           {modalMode === "view" && selectedUser && (
             <div className="space-y-4">
               <div className="flex justify-center mb-4">
-                <img src={selectedUser.profilePicture} alt="Avatar" className="w-24 h-24 rounded-full border-4 border-slate-100 object-cover" />
+                <img src={selectedUser.profilePicture || "https://media.istockphoto.com/id/1316420668/vector/user-icon-human-person-symbol-social-profile-icon-avatar-login-sign-web-user-symbol.jpg?s=612x612&w=0&k=20&c=AhqW2ssX8EeI2IYFm6-ASQ7rfeBWfrFFV4E87SaFhJE="} alt="Avatar" className="w-24 h-24 rounded-full border-4 border-slate-100 object-cover bg-slate-100" onError={(e) => { e.target.onerror = null; e.target.src = "https://media.istockphoto.com/id/1316420668/vector/user-icon-human-person-symbol-social-profile-icon-avatar-login-sign-web-user-symbol.jpg?s=612x612&w=0&k=20&c=AhqW2ssX8EeI2IYFm6-ASQ7rfeBWfrFFV4E87SaFhJE=" }} />
               </div>
               <div><span className="font-semibold text-slate-500 w-24 inline-block">ID:</span> {selectedUser._id}</div>
               <div><span className="font-semibold text-slate-500 w-24 inline-block">Username:</span> {selectedUser.username}</div>
@@ -294,6 +295,7 @@ const AllUsers = () => {
                     src={selectedFile ? URL.createObjectURL(selectedFile) : (selectedUser?.profilePicture || "https://media.istockphoto.com/id/1316420668/vector/user-icon-human-person-symbol-social-profile-icon-avatar-login-sign-web-user-symbol.jpg?s=612x612&w=0&k=20&c=AhqW2ssX8EeI2IYFm6-ASQ7rfeBWfrFFV4E87SaFhJE=")} 
                     alt="Preview" 
                     className="w-24 h-24 rounded-full object-cover border-4 border-slate-100"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "https://media.istockphoto.com/id/1316420668/vector/user-icon-human-person-symbol-social-profile-icon-avatar-login-sign-web-user-symbol.jpg?s=612x612&w=0&k=20&c=AhqW2ssX8EeI2IYFm6-ASQ7rfeBWfrFFV4E87SaFhJE=" }}
                   />
                   <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full cursor-pointer hover:bg-blue-700 transition">
                     <IconUpload size={14} />

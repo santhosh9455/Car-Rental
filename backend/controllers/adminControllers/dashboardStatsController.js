@@ -56,12 +56,48 @@ export const getDashboardStats = async (req, res, next) => {
       y: item.earnings
     }));
 
+    // Recent Transactions
+    const recentBookings = await Booking.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('userId', 'username')
+      .populate('vehicleId', 'company model');
+    
+    const recentTransactions = recentBookings.map(b => ({
+      id: `#TX-${b._id.toString().substring(0, 6).toUpperCase()}`,
+      user: b.userId?.username || "Unknown",
+      vehicle: b.vehicleId ? `${b.vehicleId.company} ${b.vehicleId.model}` : "Unknown",
+      amount: `₹${b.totalPrice}`,
+      date: new Date(b.createdAt).toLocaleDateString(),
+      status: b.status === "tripCompleted" ? "Completed" : b.status === "canceled" ? "Cancelled" : "Pending"
+    }));
+
+    // Vehicle Performance Bar Chart
+    const vehiclePerformanceAggr = await Booking.aggregate([
+      {
+        $lookup: {
+          from: "vehicles",
+          localField: "vehicleId",
+          foreignField: "_id",
+          as: "vehicle"
+        }
+      },
+      { $unwind: "$vehicle" },
+      { $group: { _id: "$vehicle.car_type", bookings: { $sum: 1 } } }
+    ]);
+    const vehiclePerformanceChartData = vehiclePerformanceAggr.map(item => ({
+      type: item._id || "Unknown",
+      bookings: item.bookings
+    }));
+
     res.status(200).json({
       totalUsers,
       totalVehicles,
       totalBookings,
       totalEarnings,
       bookingStatusChartData,
+      vehiclePerformanceChartData,
+      recentTransactions,
       monthlyEarningsChartData: [
         {
           id: "earnings",
