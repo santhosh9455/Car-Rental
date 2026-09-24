@@ -15,6 +15,7 @@ import {
 import { useSelector } from "react-redux";
 import AdminHomeMain from "../pages/AdminHomeMain.jsx";
 import Bookings from "../components/Bookings.jsx";
+import DamageDetection from "../../../components/DamageDetection";
 
 function AdminDashNew() {
   const { activeMenu } = useSelector((state) => state.adminDashboardSlice);
@@ -57,6 +58,7 @@ function AdminDashNew() {
               <Route path="/orders" element={<Bookings />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/payments" element={<Payment />} />
+              <Route path="/damageDetection" element={<DamageDetection />} />
 
             </Routes>
           </div>

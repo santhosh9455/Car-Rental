@@ -45,6 +45,10 @@ export const links = [
           name: 'settings',
           icon: <IoSettingsOutline />,
         },
+        {
+          name: 'damageDetection',
+          icon: <FiEdit />,
+        },
       ]
     }
   ];

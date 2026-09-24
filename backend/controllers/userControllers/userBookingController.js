@@ -77,7 +77,7 @@ export const razorpayOrder = async (req, res, next) => {
       return next(errorHandler(400, "Missing Required Feilds Process Cancelled")) ;
     }
     const settings = await SystemSettings.findOne();
-    if (!settings || settings.razorpayKeyId === "placeholder_key") {
+    if (!settings || !settings.razorpayKeyId || settings.razorpayKeyId === "placeholder_key") {
       return next(errorHandler(500, "Razorpay is not configured on the server."));
     }
 

@@ -24,7 +24,10 @@ export const links = [
           name: 'Bookings',
           icon: <FiShoppingBag />,
         },
-        
+        {
+          name: 'damageDetection',
+          icon: <FiShoppingBag />,
+        },
       ],
     },
   

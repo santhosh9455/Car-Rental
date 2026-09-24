@@ -5,12 +5,12 @@ const SystemSettingsSchema = new mongoose.Schema(
     razorpayKeyId: {
       type: String,
       required: true,
-      default: "placeholder_key",
+      default: "rzp_test_SHtEFbhVVh6JIs",
     },
     razorpaySecret: {
       type: String,
       required: true,
-      default: "placeholder_secret",
+      default: "iYM71zTceW19cIiaZSzAc0Pm",
     },
   },
   { timestamps: true }

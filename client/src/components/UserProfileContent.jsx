@@ -3,6 +3,7 @@ import ProfileEdit from "../pages/user/ProfileEdit";
 import toast, { Toaster } from "react-hot-toast";
 import { setUpdated } from "../redux/user/userSlice";
 import { useEffect } from "react";
+import DamageDetection from "./DamageDetection";
 
 const UserProfileContent = () => {
   const { email, username, profilePicture, phoneNumber, adress } = useSelector(
@@ -57,6 +58,9 @@ const UserProfileContent = () => {
           </div>
         </div>
       </div>
+      
+      {/* Damage Detection Integration (Hugging Face iframe) */}
+      <DamageDetection />
     </div>
   );
 };
